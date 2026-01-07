@@ -290,7 +290,7 @@ const App: React.FC = () => {
                 progress={progress}
                 accentClass={activeDay.accent}
               />
-              <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Goal</span>
+              <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Obiettivo</span>
             </div>
 
             {/* Vertical Divider */}
@@ -348,8 +348,8 @@ const App: React.FC = () => {
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trophy className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-2xl font-black italic uppercase mb-2">Workout Completo!</h3>
-            <p className="text-sm font-medium opacity-90">Bravo! Nutriti bene e riposa per crescere.</p>
+            <h3 className="text-2xl font-black italic uppercase mb-2">Allenamento Completato</h3>
+            <p className="text-sm font-medium opacity-90">Ottimo lavoro! Ricorda che nutrizione e riposo sono fondamentali per la crescita.</p>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -357,7 +357,7 @@ const App: React.FC = () => {
               }}
               className="mt-6 px-6 py-2 bg-white text-green-600 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-colors"
             >
-              Reset Sessione
+              Nuova Sessione
             </button>
           </div>
         )}
@@ -393,7 +393,7 @@ const App: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold dark:text-white">Gestione Schede</h3>
-                  <p className="text-xs text-slate-500 font-medium">Importa o esporta i tuoi allenamenti</p>
+                  <p className="text-xs text-slate-500 font-medium">Gestisci, salva e carica i tuoi piani di allenamento</p>
                 </div>
               </div>
               <button
@@ -410,8 +410,8 @@ const App: React.FC = () => {
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-3 group-hover:scale-110 transition-transform">
                     <Upload className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Importa JSON</span>
-                  <span className="text-xs text-slate-400 mt-1">Sostituisci le schede attuali</span>
+                  <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Importa Dati</span>
+                  <span className="text-xs text-slate-400 mt-1">Sovrascrive i dati esistenti</span>
                   <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
                 </label>
 
@@ -422,20 +422,20 @@ const App: React.FC = () => {
                   <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full mb-3 group-hover:scale-110 transition-transform">
                     <Download className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
-                  <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Scarica Backup</span>
-                  <span className="text-xs text-slate-400 mt-1">Salva il file sul dispositivo</span>
+                  <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Esporta Dati</span>
+                  <span className="text-xs text-slate-400 mt-1">Salva una copia locale</span>
                 </button>
               </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Anteprima JSON</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Anteprima Dati</label>
                   <button
                     onClick={handleCopy}
                     className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     <Copy className="w-3 h-3" />
-                    Copia codice
+                    Copia Dati
                   </button>
                 </div>
                 <div className="relative group">
@@ -451,7 +451,7 @@ const App: React.FC = () => {
                   className="w-full py-4 flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors font-medium text-sm"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  Ripristina Schede Originali
+                  Ripristina Default
                 </button>
               </div>
             </div>
