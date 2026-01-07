@@ -1,5 +1,5 @@
 
-export type MuscleGroup = 'chest' | 'back' | 'shoulders' | 'arms' | 'legs' | 'core';
+export type MuscleGroup = 'chest' | 'back' | 'shoulders' | 'biceps' | 'triceps' | 'legs' | 'calves';
 
 export interface Exercise {
   name: string;

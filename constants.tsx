@@ -30,7 +30,7 @@ export const WORKOUT_DATA: WorkoutDay[] = [
         name: "Zona Spalle & Tricipiti",
         exercises: [
           { name: "Alzate Laterali Manubri", sets: "3 x 15", type: "shoulders", notes: "Focus deltoide laterale" },
-          { name: "French Press + Extension", sets: "3 x 10+10", type: "arms", notes: "Superset con manubri su panca" }
+          { name: "French Press + Extension", sets: "3 x 10+10", type: "triceps", notes: "Superset con manubri su panca" }
         ]
       }
     ]
@@ -62,8 +62,8 @@ export const WORKOUT_DATA: WorkoutDay[] = [
         name: "Bassa Schiena & Bicipiti",
         exercises: [
           { name: "Iperextensions", sets: "4 x 12-15", type: "back", notes: "Fondamentale per la tua carenza" },
-          { name: "Bicep Curl Machine", sets: "4 x 10-12", type: "arms", notes: "Alla tua macchina preferita" },
-          { name: "Hammer Curl Manubri", sets: "3 x 10", type: "arms", notes: "Falli anche seduto vicino alla macchina" }
+          { name: "Bicep Curl Machine", sets: "4 x 10-12", type: "biceps", notes: "Alla tua macchina preferita" },
+          { name: "Hammer Curl Manubri", sets: "3 x 10", type: "biceps", notes: "Falli anche seduto vicino alla macchina" }
         ]
       }
     ]
@@ -95,9 +95,9 @@ export const WORKOUT_DATA: WorkoutDay[] = [
         name: "Stazione Cavi (Multi-task)",
         exercises: [
           { name: "Face Pull ai Cavi", sets: "3 x 15", type: "shoulders", notes: "Posteriore spalle" },
-          { name: "Bicep Curl Machine", sets: "3 x 10 + Rest-Pause", type: "arms", notes: "15\" pausa tra i micro-set finali" },
-          { name: "Pushdown Tricipiti", sets: "3 x 12", type: "arms", notes: "Cavo alto - Stesso gancio per dopo" },
-          { name: "Curl Bicipiti", sets: "3 x 12", type: "arms", notes: "Sposta il gancio in basso e chiudi" }
+          { name: "Bicep Curl Machine", sets: "3 x 10 + Rest-Pause", type: "biceps", notes: "15\" pausa tra i micro-set finali" },
+          { name: "Pushdown Tricipiti", sets: "3 x 12", type: "triceps", notes: "Cavo alto - Stesso gancio per dopo" },
+          { name: "Curl Bicipiti", sets: "3 x 12", type: "biceps", notes: "Sposta il gancio in basso e chiudi" }
         ]
       }
     ]
@@ -128,7 +128,7 @@ export const WORKOUT_DATA: WorkoutDay[] = [
       {
         name: "Zona Polpacci",
         exercises: [
-          { name: "Polpacci al Macchinario", sets: "4 x 20", type: "legs", notes: "Massimo stretching nella fase bassa" }
+          { name: "Polpacci al Macchinario", sets: "4 x 20", type: "calves", notes: "Massimo stretching nella fase bassa" }
         ]
       }
     ]
