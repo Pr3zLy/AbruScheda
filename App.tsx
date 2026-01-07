@@ -9,9 +9,16 @@ import {
   Trophy,
   Sun,
   Moon,
-  Construction
+  Construction,
+  Upload,
+  Download,
+  Copy,
+  RotateCcw,
+  X,
+  FileJson
 } from 'lucide-react';
 import { WORKOUT_DATA } from './constants';
+import { WorkoutDay } from './types';
 import TypeIcon from './components/TypeIcon';
 import Timer from './components/Timer';
 
@@ -99,7 +106,112 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const activeDay = WORKOUT_DATA[activeDayIdx];
+  const [workoutData, setWorkoutData] = useState<WorkoutDay[]>(() => {
+    try {
+      const saved = localStorage.getItem('custom_workout_data');
+      return saved ? JSON.parse(saved) : WORKOUT_DATA;
+    } catch {
+      return WORKOUT_DATA;
+    }
+  });
+  const [showDataModal, setShowDataModal] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('custom_workout_data', JSON.stringify(workoutData));
+  }, [workoutData]);
+
+  const activeDay = workoutData[activeDayIdx] || workoutData[0];
+
+  const validateWorkoutData = (data: any): data is WorkoutDay[] => {
+    if (!Array.isArray(data)) throw new Error("Il file deve contenere un array di schede.");
+
+    data.forEach((day, index) => {
+      if (typeof day !== 'object' || day === null) throw new Error(`L'elemento ${index + 1} non è un oggetto valido.`);
+
+      const requiredDayFields = ['id', 'title', 'subtitle', 'theme', 'accent', 'bgLight', 'bgDark', 'zones'];
+      requiredDayFields.forEach(field => {
+        if (!(field in day)) throw new Error(`Scheda ${index + 1}: Manca il campo obbligatorio '${field}'.`);
+      });
+
+      if (!Array.isArray(day.zones)) throw new Error(`Scheda ${index + 1}: 'zones' deve essere un array.`);
+
+      day.zones.forEach((zone: any, zIndex: number) => {
+        if (typeof zone !== 'object' || zone === null) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}: Non valido.`);
+        if (!('name' in zone)) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}: Manca il nome.`);
+        if (!Array.isArray(zone.exercises)) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}: 'exercises' deve essere un array.`);
+
+        zone.exercises.forEach((ex: any, eIndex: number) => {
+          if (typeof ex !== 'object' || ex === null) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}, Esercizio ${eIndex + 1}: Non valido.`);
+          const reqExFields = ['name', 'sets', 'type', 'notes'];
+          reqExFields.forEach(f => {
+            if (!(f in ex)) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}, Esercizio ${eIndex + 1}: Manca '${f}'.`);
+          });
+        });
+      });
+    });
+
+    return true;
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input value to allow selecting the same file again if needed
+    e.target.value = '';
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const jsonContent = event.target?.result as string;
+        if (!jsonContent) throw new Error("Il file è vuoto.");
+
+        let data;
+        try {
+          data = JSON.parse(jsonContent);
+        } catch (e) {
+          throw new Error("Errore di sintassi JSON. Verifica che il file sia formattato correttamente.");
+        }
+
+        if (validateWorkoutData(data)) {
+          setWorkoutData(data);
+          setShowDataModal(false);
+          setActiveDayIdx(0);
+          alert("Schede importate con successo!");
+        }
+      } catch (error: any) {
+        alert(`Errore nell'importazione:\n${error.message}`);
+        console.error("Import Error:", error);
+      }
+    };
+    reader.onerror = () => {
+      alert("Errore durante la lettura del file.");
+    };
+    reader.readAsText(file);
+  };
+
+  const handleDownload = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workoutData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "abruscheda_backup.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(JSON.stringify(workoutData, null, 2));
+    alert('JSON copiato negli appunti!');
+  };
+
+  const handleReset = () => {
+    if (confirm('Sei sicuro di voler ripristinare le schede originali?')) {
+      setWorkoutData(WORKOUT_DATA);
+      setShowDataModal(false);
+      setActiveDayIdx(0);
+    }
+  };
 
   const toggleExercise = (dayId: number, exerciseName: string) => {
     const key = `${dayId}-${exerciseName}`;
@@ -140,14 +252,17 @@ const App: React.FC = () => {
               >
                 {isDarkMode ? <Sun className="w-5 h-5 text-white" /> : <Moon className="w-5 h-5 text-white" />}
               </button>
-              <div className="bg-white/20 backdrop-blur-xl p-3 rounded-2xl">
+              <button
+                onClick={() => setShowDataModal(true)}
+                className="bg-white/20 backdrop-blur-xl p-3 rounded-2xl hover:bg-white/30 transition-colors active:scale-95"
+              >
                 <Dumbbell className="w-5 h-5 text-white float-anim" />
-              </div>
+              </button>
             </div>
           </div>
 
           <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar py-2">
-            {WORKOUT_DATA.map((day, idx) => (
+            {workoutData.map((day, idx) => (
               <button
                 key={day.id}
                 onClick={() => setActiveDayIdx(idx)}
@@ -251,7 +366,7 @@ const App: React.FC = () => {
       {/* Unified Bottom Nav */}
       <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md p-1 bg-white/80 dark:bg-slate-900/90 backdrop-blur-2xl rounded-full border border-slate-200 dark:border-slate-800 shadow-2xl z-50 transition-all duration-500 ${isScrolled ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
         <div className="flex justify-around items-center">
-          {WORKOUT_DATA.map((day, idx) => (
+          {workoutData.map((day, idx) => (
             <button
               key={day.id}
               className={`flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-full transition-all flex-1 ${activeDayIdx === idx ? `${day.accent.replace('text', 'bg')} text-white scale-105 shadow-lg` : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
@@ -266,6 +381,83 @@ const App: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Data Management Modal */}
+      {showDataModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                  <FileJson className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold dark:text-white">Gestione Schede</h3>
+                  <p className="text-xs text-slate-500 font-medium">Importa o esporta i tuoi allenamenti</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDataModal(false)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all group">
+                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                    <Upload className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Importa JSON</span>
+                  <span className="text-xs text-slate-400 mt-1">Sostituisci le schede attuali</span>
+                  <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+                </label>
+
+                <button
+                  onClick={handleDownload}
+                  className="flex flex-col items-center justify-center p-6 border-2 border-slate-100 dark:border-slate-800 rounded-2xl hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all group"
+                >
+                  <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                    <Download className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Scarica Backup</span>
+                  <span className="text-xs text-slate-400 mt-1">Salva il file sul dispositivo</span>
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Anteprima JSON</label>
+                  <button
+                    onClick={handleCopy}
+                    className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Copy className="w-3 h-3" />
+                    Copia codice
+                  </button>
+                </div>
+                <div className="relative group">
+                  <pre className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl text-[10px] leading-relaxed font-mono text-slate-600 dark:text-slate-400 overflow-x-auto border border-slate-200 dark:border-slate-800 max-h-60 shadow-inner">
+                    {JSON.stringify(workoutData, null, 2)}
+                  </pre>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  onClick={handleReset}
+                  className="w-full py-4 flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors font-medium text-sm"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Ripristina Schede Originali
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
