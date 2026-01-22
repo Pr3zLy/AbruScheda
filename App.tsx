@@ -15,10 +15,93 @@ import {
   Copy,
   RotateCcw,
   X,
-  FileJson
+  FileJson,
+  Sparkles,
+  Bot
 } from 'lucide-react';
-import { WORKOUT_DATA } from './constants';
+import WORKOUT_DATA_SEMPLIFICATO from './workout_data.json';
 import { WorkoutDay } from './types';
+
+// Funzione per convertire la struttura semplificata in struttura completa
+const convertiStrutturaSemplificata = (data: any[]): WorkoutDay[] => {
+  return data.map((scheda, index) => {
+    // Raggruppa esercizi per tipo per creare zone automaticamente
+    const gruppiPerTipo: Record<string, any[]> = {};
+
+    scheda.esercizi.forEach((es: any) => {
+      if (!gruppiPerTipo[es.tipo]) {
+        gruppiPerTipo[es.tipo] = [];
+      }
+      gruppiPerTipo[es.tipo].push({
+        name: es.nome,
+        sets: es.serie,
+        type: es.tipo,
+        notes: es.note
+      });
+    });
+
+    // Mappa dei tipi a nomi di zone più chiari
+    const nomiZona: Record<string, string> = {
+      chest: "Zona Petto",
+      back: "Zona Schiena",
+      shoulders: "Zona Spalle",
+      legs: "Zona Gambe",
+      triceps: "Zona Tricipiti",
+      biceps: "Zona Bicipiti",
+      calves: "Zona Polpacci"
+    };
+
+    const zones = Object.entries(gruppiPerTipo).map(([tipo, exercises]) => ({
+      name: nomiZona[tipo] || `Zona ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`,
+      exercises: exercises
+    }));
+
+    // Determina tema e colori basati sul titolo
+    const titoloLower = scheda.title.toLowerCase();
+    let theme, accent, bgLight, bgDark;
+
+    if (titoloLower.includes('push')) {
+      theme = "from-orange-500 to-red-600";
+      accent = "text-orange-600";
+      bgLight = "bg-orange-50";
+      bgDark = "dark:bg-orange-950/20";
+    } else if (titoloLower.includes('pull')) {
+      theme = "from-blue-500 to-indigo-600";
+      accent = "text-blue-600";
+      bgLight = "bg-blue-50";
+      bgDark = "dark:bg-blue-950/20";
+    } else if (titoloLower.includes('upper') || titoloLower.includes('mix')) {
+      theme = "from-purple-500 to-pink-600";
+      accent = "text-purple-600";
+      bgLight = "bg-purple-50";
+      bgDark = "dark:bg-purple-950/20";
+    } else if (titoloLower.includes('leg')) {
+      theme = "from-emerald-500 to-teal-600";
+      accent = "text-emerald-600";
+      bgLight = "bg-emerald-50";
+      bgDark = "dark:bg-emerald-950/20";
+    } else {
+      // Default colors
+      theme = "from-slate-500 to-slate-600";
+      accent = "text-slate-600";
+      bgLight = "bg-slate-50";
+      bgDark = "dark:bg-slate-950/20";
+    }
+
+    return {
+      id: index + 1,
+      title: scheda.title,
+      subtitle: scheda.subtitle,
+      theme: theme,
+      accent: accent,
+      bgLight: bgLight,
+      bgDark: bgDark,
+      zones: zones
+    };
+  });
+};
+
+const WORKOUT_DATA = convertiStrutturaSemplificata(WORKOUT_DATA_SEMPLIFICATO);
 import TypeIcon from './components/TypeIcon';
 import Timer from './components/Timer';
 
@@ -60,6 +143,33 @@ const CircularProgress = ({ progress, accentClass }: { progress: number, accentC
 };
 
 const App: React.FC = () => {
+  const EXAMPLE_JSON_STRUCTURE = `[
+  {
+    "title": "GIORNO 1",
+    "subtitle": "Descrizione allenamento...",
+    "esercizi": [
+      {
+        "nome": "Esercizio 1",
+        "serie": "4 x 6-8",
+        "tipo": "chest|back|shoulders|legs|triceps|biceps|calves|forearms",
+        "note": "Note esecuzione..."
+      }
+    ]
+  },
+  {
+    "title": "GIORNO 2",
+    "subtitle": "Descrizione allenamento...",
+    "esercizi": [
+      {
+        "nome": "Esercizio 1",
+        "serie": "3 x 10",
+        "tipo": "legs",
+        "note": "Note esecuzione..."
+      }
+    ]
+  }
+]`;
+
   const [activeDayIdx, setActiveDayIdx] = useState(0);
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -106,19 +216,24 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const [workoutData, setWorkoutData] = useState<WorkoutDay[]>(() => {
-    try {
-      const saved = localStorage.getItem('custom_workout_data');
-      return saved ? JSON.parse(saved) : WORKOUT_DATA;
-    } catch {
-      return WORKOUT_DATA;
-    }
-  });
+  const [workoutData, setWorkoutData] = useState<WorkoutDay[]>(WORKOUT_DATA);
   const [showDataModal, setShowDataModal] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('custom_workout_data', JSON.stringify(workoutData));
   }, [workoutData]);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (showDataModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showDataModal]);
 
   const activeDay = workoutData[activeDayIdx] || workoutData[0];
 
@@ -173,12 +288,35 @@ const App: React.FC = () => {
           throw new Error("Errore di sintassi JSON. Verifica che il file sia formattato correttamente.");
         }
 
-        if (validateWorkoutData(data)) {
-          setWorkoutData(data);
-          setShowDataModal(false);
-          setActiveDayIdx(0);
-          alert("Schede importate con successo!");
+        if (!Array.isArray(data)) throw new Error("Il file deve contenere un array di schede.");
+        if (data.length === 0) throw new Error("Il file è vuoto.");
+
+        // Rileva se è il formato semplificato (quello generato dall'AI)
+        const isSimplified = 'esercizi' in data[0] && !('zones' in data[0]);
+
+        let finalData: WorkoutDay[];
+
+        if (isSimplified) {
+          try {
+            finalData = convertiStrutturaSemplificata(data);
+          } catch (e) {
+            throw new Error("Errore durante la conversione del formato semplificato. Verifica la struttura.");
+          }
+        } else {
+          // Valida il formato completo
+          if (validateWorkoutData(data)) {
+            finalData = data;
+          } else {
+            // Questo punto non dovrebbe essere raggiunto perché validateWorkoutData lancia eccezioni
+            throw new Error("Formato dati non valido.");
+          }
         }
+
+        setWorkoutData(finalData);
+        setShowDataModal(false);
+        setActiveDayIdx(0);
+        alert("Schede importate con successo!");
+
       } catch (error: any) {
         alert(`Errore nell'importazione:\n${error.message}`);
         console.error("Import Error:", error);
@@ -211,6 +349,85 @@ const App: React.FC = () => {
       setShowDataModal(false);
       setActiveDayIdx(0);
     }
+  };
+
+  const handleGenerateWithAI = (platform: 'gemini' | 'gpt' | 'grok') => {
+    // Costruiamo il prompt completo da inserire nel link
+    const basePrompt = "Agisci come un Personal Trainer esperto. Memorizza questa struttura JSON per creare schede di allenamento di alta qualità. Nelle prossime risposte, quando ti chiederò di creare una scheda, rispondi ESCLUSIVAMENTE con un JSON valido che rispetti questo formato, ottimizzando volume, scelta degli esercizi e note tecniche per l'ipertrofia. STRUTTURA DA MEMORIZZARE:";
+    const fullPrompt = `${basePrompt}\n${EXAMPLE_JSON_STRUCTURE}`;
+    const encodedPrompt = encodeURIComponent(fullPrompt);
+
+    const urls = {
+      gemini: `https://www.google.com/search?udm=50&q=${encodedPrompt}`,
+      gpt: `https://chatgpt.com/?q=${encodedPrompt}`,
+      grok: `https://grok.com/?q=${encodedPrompt}`
+    };
+
+    window.open(urls[platform], '_blank');
+  };
+
+  const downloadExampleJson = () => {
+    const exampleData: WorkoutDay[] = [
+      {
+        id: 1,
+        title: "TITOLO SCHEDE",
+        subtitle: "Descrizione breve dell'allenamento",
+        theme: "from-blue-500 to-purple-600",
+        accent: "text-blue-500",
+        bgLight: "bg-blue-50",
+        bgDark: "bg-blue-900/20",
+        zones: [
+          {
+            name: "Zona Esempio (Panche/Banchina)",
+            exercises: [
+              {
+                name: "Panca Piana con Bilanciere",
+                sets: "4 x 6-8",
+                type: "chest",
+                notes: "Focus su controllo eccentrico, 2-3 sec di discesa"
+              },
+              {
+                name: "Chest Press Machine",
+                sets: "3 x 10-12",
+                type: "chest",
+                notes: "Mantenere le scapole addotte, respirazione corretta"
+              },
+              {
+                name: "Chest Fly (Pettorali)",
+                sets: "3 x 12-15",
+                type: "chest",
+                notes: "ROM completo, stretch massimo in negativo"
+              }
+            ]
+          },
+          {
+            name: "Zona Spalle & Tricipiti",
+            exercises: [
+              {
+                name: "Lateral Raises (Alzate Laterali)",
+                sets: "4 x 12-15",
+                type: "shoulders",
+                notes: "No slancio, controllare la fase eccentrica"
+              },
+              {
+                name: "Dips alle Parallele",
+                sets: "3 x 8-10",
+                type: "triceps",
+                notes: "Inclinazione in avanti per enfasi petto, laterale per tricipiti"
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exampleData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "esempio_scheda.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
   };
 
   const toggleExercise = (dayId: number, exerciseName: string) => {
@@ -322,19 +539,19 @@ const App: React.FC = () => {
                     {isDone ? <CheckCircle2 className="w-5 h-5" /> : <TypeIcon type={ex.type} isDone={isDone} />}
                   </div>
                   <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <h4 className={`font-bold transition-all ${isDone ? 'line-through text-slate-500 dark:text-slate-600' : 'text-slate-800 dark:text-slate-100 text-lg leading-tight pr-2'}`}>
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className={`font-bold transition-all flex-1 ${isDone ? 'line-through text-slate-500 dark:text-slate-600' : 'text-slate-800 dark:text-slate-100 text-lg leading-tight'}`}>
                         {ex.name}
                       </h4>
-                    </div>
-
-                    <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2">
-                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-tight ${isDone ? 'bg-slate-200 dark:bg-slate-800 text-slate-500' : `${activeDay.bgLight} ${activeDay.bgDark} ${activeDay.accent}`}`}>
+                      <span className={`shrink-0 inline-flex items-center text-xs font-black px-2.5 py-1 rounded-lg uppercase tracking-wider ${isDone ? 'bg-slate-200 dark:bg-slate-800 text-slate-500' : `${activeDay.bgLight} ${activeDay.bgDark} ${activeDay.accent}`}`}>
                         {ex.sets}
                       </span>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium leading-tight">
+                    </div>
+
+                    <div className="mt-2 text-center">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2">
                         {ex.notes}
-                      </span>
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -428,6 +645,37 @@ const App: React.FC = () => {
               </div>
 
               <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Crea SCHEDA con AI 100% GRATIS</label>
+                <div className="grid grid-cols-3 gap-3">
+                  <button onClick={() => handleGenerateWithAI('gemini')} className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800 hover:scale-[1.02] transition-transform group">
+                    <img
+                      src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-png/dark/gemini-color.png"
+                      alt="Gemini"
+                      className="w-5 h-5 object-contain group-hover:scale-110 transition-transform"
+                    />
+                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">Gemini</span>
+                  </button>
+                  <button onClick={() => handleGenerateWithAI('gpt')} className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-800 hover:scale-[1.02] transition-transform group">
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/960px-ChatGPT_logo.svg.png"
+                      alt="ChatGPT"
+                      className="w-5 h-5 object-contain group-hover:scale-110 transition-transform"
+                    />
+                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">ChatGPT</span>
+                  </button>
+                  <button onClick={() => handleGenerateWithAI('grok')} className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:scale-[1.02] transition-transform group">
+                    <img
+                      src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/grok-icon.png"
+                      alt="Grok"
+                      className="w-5 h-5 object-contain group-hover:scale-110 transition-transform opacity-70 dark:opacity-100 dark:invert"
+                    />
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Grok</span>
+                  </button>
+                </div>
+                <p className="text-[10px] text-center text-slate-400">Il prompt e la struttura sono inclusi nel link</p>
+              </div>
+
+              <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Anteprima Dati</label>
                   <button
@@ -439,8 +687,8 @@ const App: React.FC = () => {
                   </button>
                 </div>
                 <div className="relative group">
-                  <pre className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl text-[10px] leading-relaxed font-mono text-slate-600 dark:text-slate-400 overflow-x-auto border border-slate-200 dark:border-slate-800 max-h-60 shadow-inner">
-                    {JSON.stringify(workoutData, null, 2)}
+                  <pre className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl text-[10px] leading-relaxed font-mono text-slate-600 dark:text-slate-400 overflow-x-auto border border-slate-200 dark:border-slate-800 shadow-inner">
+                    {EXAMPLE_JSON_STRUCTURE}
                   </pre>
                 </div>
               </div>

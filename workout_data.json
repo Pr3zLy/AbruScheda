@@ -1,0 +1,206 @@
+[
+  {
+    "title": "PUSH",
+    "subtitle": "Focus: Spinta & Ipertrofia",
+    "esercizi": [
+      {
+        "nome": "Panca Piana Bilanciere",
+        "serie": "3 x 6-8",
+        "tipo": "chest",
+        "note": "Gomiti a 45°, scapole addotte, controlla la discesa (3 sec) per massimo stimolo"
+      },
+      {
+        "nome": "Croci con Manubri (Piana)",
+        "serie": "3 x 12",
+        "tipo": "chest",
+        "note": "ROM ampio, stretch massimo in basso, contrazione pettorale in alto senza bloccare gomiti"
+      },
+      {
+        "nome": "Chest Press Inclinata",
+        "serie": "4 x 8-10",
+        "tipo": "chest",
+        "note": "Panca 30° enfasi petto alto, gomiti sotto le mani, discesa controllata"
+      },
+      {
+        "nome": "Pec Deck (Butterfly)",
+        "serie": "3 x 12",
+        "tipo": "chest",
+        "note": "ROM completo, contrazione picco 1 sec, evita slancio, scapole ferme"
+      },
+      {
+        "nome": "Dips (Parallele)",
+        "serie": "3 x Max",
+        "tipo": "chest",
+        "note": "Inclinazione avanti petto, giù profondo (90°), spinta con petto non tricipiti"
+      },
+      {
+        "nome": "Alzate Laterali Manubri",
+        "serie": "3 x 15",
+        "tipo": "shoulders",
+        "note": "Niente slancio, gomiti leggermente piegati,ROM completo ma controllato"
+      },
+      {
+        "nome": "French Press + Extension",
+        "serie": "3 x 10+10",
+        "tipo": "triceps",
+        "note": "French: gomiti in alto, discesa dietro testa. Extension: sopra testa, ROM completo"
+      },
+      {
+        "nome": "Avambracci",
+        "serie": "4 x 10",
+        "tipo": "forearms",
+        "note": "Esecuzione controllata, pompa gli avambracci"
+      }
+    ]
+  },
+  {
+    "title": "PULL",
+    "subtitle": "Focus: Tirata & Schiena Spessa",
+    "esercizi": [
+      {
+        "nome": "Lat Machine Presa Larga",
+        "serie": "4 x 8-10",
+        "tipo": "back",
+        "note": "Scapole giù e indietro, petto fuori, ROM completo senza slancio"
+      },
+      {
+        "nome": "Pullover al Cavo Alto",
+        "serie": "3 x 15",
+        "tipo": "back",
+        "note": "ROM ampio dalla testa ai glutei, enfasi gran dorsale, stretch massimo"
+      },
+      {
+        "nome": "Pulley Basso (Stretto)",
+        "serie": "4 x 10",
+        "tipo": "back",
+        "note": "Inclinazione in avanti 30°, tirata al bacino, scapole indietro"
+      },
+      {
+        "nome": "Rematore Unilaterale Machine",
+        "serie": "3 x 10 per lato",
+        "tipo": "back",
+        "note": "Gomito vicino al corpo, tirata all'altezza bacino, contrazione 1 sec"
+      },
+      {
+        "nome": "Iperextensions",
+        "serie": "4 x 12-15",
+        "tipo": "back",
+        "note": "ROM completo, enfasi contrazione glutei/lombari, controlla la discesa"
+      },
+      {
+        "nome": "Bicep Curl Machine",
+        "serie": "4 x 10-12",
+        "tipo": "biceps",
+        "note": "ROM completo, gomiti fissi, contrazione picco 1 sec, lento in negativo"
+      },
+      {
+        "nome": "Hammer Curl Manubri",
+        "serie": "3 x 10",
+        "tipo": "biceps",
+        "note": "Presa neutra, gomito fisso, esecuzione lenta e controllata"
+      },
+      {
+        "nome": "Avambracci",
+        "serie": "4 x 10",
+        "tipo": "forearms",
+        "note": "Esecuzione controllata, pompa gli avambracci"
+      }
+    ]
+  },
+  {
+    "title": "UPPER FOCUS",
+    "subtitle": "Focus: Mix Carenze & Arm Killer",
+    "esercizi": [
+      {
+        "nome": "Chest Press Orizzontale",
+        "serie": "3 x 10",
+        "tipo": "chest",
+        "note": "Inizia col petto (punto debole)"
+      },
+      {
+        "nome": "Lat Machine Inversa",
+        "serie": "4 x 10",
+        "tipo": "back",
+        "note": "Alterna spinta e tirata"
+      },
+      {
+        "nome": "Panca Inclinata Manubri",
+        "serie": "3 x 10-12",
+        "tipo": "chest",
+        "note": "Zona panche"
+      },
+      {
+        "nome": "Vertical Row",
+        "serie": "3 x 10",
+        "tipo": "back",
+        "note": "Zona macchine"
+      },
+      {
+        "nome": "Face Pull ai Cavi",
+        "serie": "3 x 15",
+        "tipo": "shoulders",
+        "note": "Posteriore spalle"
+      },
+      {
+        "nome": "Bicep Curl Machine",
+        "serie": "3 x 10 + Rest-Pause",
+        "tipo": "biceps",
+        "note": "15\" pausa tra i micro-set finali"
+      },
+      {
+        "nome": "Pushdown Tricipiti",
+        "serie": "3 x 12",
+        "tipo": "triceps",
+        "note": "Cavo alto - Stesso gancio per dopo"
+      },
+      {
+        "nome": "Curl Bicipiti",
+        "serie": "3 x 12",
+        "tipo": "biceps",
+        "note": "Sposta il gancio in basso e chiudi"
+      },
+      {
+        "nome": "Avambracci",
+        "serie": "4 x 10",
+        "tipo": "forearms",
+        "note": "Esecuzione controllata, pompa gli avambracci"
+      }
+    ]
+  },
+  {
+    "title": "LEGS",
+    "subtitle": "Focus: Forza & Volume Gambe",
+    "esercizi": [
+      {
+        "nome": "Squat al Macchinario",
+        "serie": "4 x 8-10",
+        "tipo": "legs",
+        "note": "Hack squat o Smith Machine, massima profondità"
+      },
+      {
+        "nome": "Leg Press 45°",
+        "serie": "3 x 12",
+        "tipo": "legs",
+        "note": "Piedi medi, focus spinta di tallone"
+      },
+      {
+        "nome": "Leg Extension",
+        "serie": "4 x 15",
+        "tipo": "legs",
+        "note": "Contrazione di 1 secondo in alto"
+      },
+      {
+        "nome": "Leg Curl (Seduto/Sdraiato)",
+        "serie": "4 x 12",
+        "tipo": "legs",
+        "note": "Focus femorali, controlla il ritorno"
+      },
+      {
+        "nome": "Polpacci al Macchinario",
+        "serie": "4 x 20",
+        "tipo": "calves",
+        "note": "Massimo stretching nella fase bassa"
+      }
+    ]
+  }
+]

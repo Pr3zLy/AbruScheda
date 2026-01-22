@@ -164,9 +164,9 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
           <button
             onClick={(e) => toggle(e)}
             style={{ backgroundColor: themeColor }}
-            className="p-2.5 rounded-xl text-white shadow-lg transition-all active:scale-95 hover:brightness-110"
+            className="p-4 rounded-xl text-white shadow-lg transition-all active:scale-95 hover:brightness-110"
           >
-            {isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+            {isActive ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7" />}
           </button>
         </div>
       </div>
@@ -182,8 +182,8 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
               color: baseTime === t ? themeColor : undefined
             }}
             className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition-all border ${baseTime === t
-                ? ''
-                : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+              ? ''
+              : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50'
               }`}
           >
             {t}s

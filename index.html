@@ -57,6 +57,40 @@
         .float-anim {
             animation: subtle-float 3s ease-in-out infinite;
         }
+
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            /* slate-300 */
+            border-radius: 20px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+            /* slate-400 */
+        }
+
+        /* Dark mode scrollbar */
+        .dark ::-webkit-scrollbar-thumb {
+            background-color: #334155;
+            /* slate-700 */
+        }
+
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background-color: #475569;
+            /* slate-600 */
+        }
     </style>
     <script type="importmap">
 {
