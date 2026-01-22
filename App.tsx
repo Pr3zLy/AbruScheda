@@ -646,7 +646,7 @@ const App: React.FC = () => {
                   </div>
                   <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Importa Dati</span>
                   <span className="text-xs text-slate-400 mt-1">Sovrascrive i dati esistenti</span>
-                  <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+                  <input type="file" accept=".json,application/json,text/plain,*/*" onChange={handleFileUpload} className="hidden" />
                 </label>
 
                 <button
