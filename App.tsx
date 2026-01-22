@@ -495,12 +495,12 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar py-2">
+          <div className="flex flex-wrap justify-center gap-2 mb-2 py-2">
             {workoutData.map((day, idx) => (
               <button
                 key={day.id}
                 onClick={() => setActiveDayIdx(idx)}
-                className={`px-6 py-3 rounded-full text-xs font-black whitespace-nowrap transition-all uppercase tracking-tighter ${activeDayIdx === idx
+                className={`flex-1 min-w-[45%] sm:min-w-0 px-4 py-3 rounded-full text-xs font-black whitespace-nowrap transition-all uppercase tracking-tighter ${activeDayIdx === idx
                   ? 'bg-white text-slate-900 shadow-xl scale-105'
                   : 'bg-white/20 text-white hover:bg-white/30'
                   }`}
