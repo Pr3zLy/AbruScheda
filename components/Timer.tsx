@@ -36,21 +36,27 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
 
   // Request notification permission on mount
   useEffect(() => {
-    if ("Notification" in window && Notification.permission !== "granted") {
-      Notification.requestPermission();
+    try {
+      if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission().catch(e => console.warn("Notification permission error", e));
+      }
+    } catch (e) {
+      console.warn("Notification API not supported", e);
     }
   }, []);
 
   const playBeep = () => {
     try {
       initAudio();
-      const ctx = audioContextRef.current!;
+      if (!audioContextRef.current) return;
+      const ctx = audioContextRef.current;
+
       const playTone = (startTime: number) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, startTime); // A5 note
+        osc.frequency.setValueAtTime(880, startTime);
         osc.connect(gain);
         gain.connect(ctx.destination);
 
@@ -62,7 +68,6 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
         osc.stop(startTime + 0.6);
       };
 
-      // Play twice
       const now = ctx.currentTime;
       playTone(now);
       playTone(now + 0.8);
@@ -73,34 +78,118 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
   };
 
   const sendNotification = () => {
-    if ("Notification" in window && Notification.permission === "granted") {
-      new Notification("Recupero Terminato! 🔔", {
-        body: "È ora di tornare ad allenarsi!",
-        icon: "/icon.png" // Fallback icon if available, generic otherwise
-      });
+    try {
+      if ("Notification" in window && Notification.permission === "granted") {
+        const n = new Notification("Recupero Terminato! 🔔", {
+          body: "È ora di tornare ad allenarsi!",
+          icon: "/icon.png"
+        });
+        // Close notification automatically after 5 seconds
+        setTimeout(() => n.close(), 5000);
+      }
+    } catch (e) {
+      console.warn("Notification failed creation", e);
     }
   };
 
+  // Silent MP3 to keep audio session alive and allow lockscreen updates
+  const SILENT_AUDIO = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA';
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const updateMediaSession = (sec: number) => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: `${sec}s`,
+        artist: 'Timer Recupero',
+        artwork: [
+          { src: '/icon.png', sizes: '96x96', type: 'image/png' },
+          { src: '/icon.png', sizes: '128x128', type: 'image/png' },
+        ]
+      });
+      navigator.mediaSession.playbackState = 'playing';
+
+      // Setting action handlers is often required for the notification to be visible on mobile
+      navigator.mediaSession.setActionHandler('play', () => { /* no-op or resume */ });
+      navigator.mediaSession.setActionHandler('pause', () => { /* no-op or pause */ });
+      navigator.mediaSession.setActionHandler('stop', () => { /* no-op */ });
+    }
+  };
+
+  const clearMediaSession = () => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'none';
+      try {
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('stop', null);
+      } catch (e) { /* ignore */ }
+    }
+  };
+
+  const workerRef = useRef<Worker | null>(null);
+
   useEffect(() => {
-    let interval: any = null;
+    // Create a simple worker blob code
+    const workerCode = `
+      let intervalId = null;
+      self.onmessage = function(e) {
+        if (e.data === 'start') {
+          if (intervalId) clearInterval(intervalId);
+          intervalId = setInterval(() => {
+            self.postMessage('tick');
+          }, 1000);
+        } else if (e.data === 'stop') {
+          if (intervalId) clearInterval(intervalId);
+          intervalId = null;
+        }
+      };
+    `;
+
+    const blob = new Blob([workerCode], { type: "application/javascript" });
+    workerRef.current = new Worker(URL.createObjectURL(blob));
+
+    workerRef.current.onmessage = (e) => {
+      if (e.data === 'tick') {
+        setSeconds((prev) => {
+          const newVal = prev <= 1 ? 0 : prev - 1;
+          updateMediaSession(newVal);
+          return newVal;
+        });
+      }
+    };
+
+    return () => {
+      workerRef.current?.terminate();
+      clearMediaSession(); // Cleanup media session on unmount
+    };
+  }, []);
+
+  useEffect(() => {
     if (isActive && seconds > 0) {
-      // Use Date.now() for better accuracy against drift, 
-      // but simplistic decrement is often sufficient for short workout timers.
-      // To ensure background execution works better, simple setInterval is usually handled by browsers (1s throttle).
-      interval = setInterval(() => {
-        setSeconds((s) => s - 1);
-      }, 1000);
-    } else if (seconds === 0) {
-      if (isActive) {
+      workerRef.current?.postMessage('start');
+      audioRef.current?.play().catch(() => { });
+      updateMediaSession(seconds);
+    } else {
+      workerRef.current?.postMessage('stop');
+      audioRef.current?.pause();
+
+      if (seconds === 0 && isActive) {
+        // Timer just finished
         playBeep();
         sendNotification();
+        setIsActive(false);
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: "Tempo scaduto!",
+            artist: "Timer Recupero"
+          });
+          navigator.mediaSession.playbackState = 'paused';
+        }
+      } else if (seconds === 0 && !isActive) {
+        // Just ensures logic is consistent
       }
-      setIsActive(false);
-      if (interval) clearInterval(interval);
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
   }, [isActive, seconds]);
 
   useEffect(() => {
@@ -143,6 +232,13 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
   };
 
   const handleInputBlur = () => {
+    if (inputRef.current) {
+      const val = parseInt(inputRef.current.value);
+      if (!isNaN(val) && val > 0) {
+        setSeconds(val);
+        setBaseTime(val);
+      }
+    }
     setIsEditing(false);
   };
 
@@ -162,6 +258,7 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
 
   return (
     <div className="flex flex-col gap-2">
+      <audio ref={audioRef} src={SILENT_AUDIO} loop className="hidden" />
       <div className="flex items-center gap-4">
         <div className="flex-1">
           {isEditing ? (
