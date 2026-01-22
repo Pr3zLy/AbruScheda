@@ -13,6 +13,31 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
   const [isEditing, setIsEditing] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  // Wake Lock API to prevent Xiaomi/Android from killing background process
+  const requestWakeLock = async () => {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        console.log('Wake Lock acquired');
+      }
+    } catch (e) {
+      console.warn('Wake Lock request failed', e);
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    try {
+      if (wakeLockRef.current) {
+        await wakeLockRef.current.release();
+        wakeLockRef.current = null;
+        console.log('Wake Lock released');
+      }
+    } catch (e) {
+      console.warn('Wake Lock release failed', e);
+    }
+  };
 
   // Derive hex/color code from accent class for reliable styling
   const getColorHex = (accentClass: string) => {
@@ -168,11 +193,16 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
   useEffect(() => {
     if (isActive && seconds > 0) {
       workerRef.current?.postMessage('start');
-      audioRef.current?.play().catch(() => { });
+      requestWakeLock(); // Keep screen/process alive on Xiaomi
+      if (audioRef.current) {
+        audioRef.current.volume = 0.01; // Very quiet but not silent (prevents optimization)
+        audioRef.current.play().catch((e) => console.warn('Audio play failed', e));
+      }
       updateMediaSession(seconds);
     } else {
       workerRef.current?.postMessage('stop');
       audioRef.current?.pause();
+      releaseWakeLock(); // Release wake lock when timer stops
 
       if (seconds === 0 && isActive) {
         // Timer just finished
