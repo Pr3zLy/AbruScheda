@@ -328,8 +328,24 @@ const App: React.FC = () => {
     reader.readAsText(file);
   };
 
+  const convertToSimplified = (data: WorkoutDay[]) => {
+    return data.map(day => ({
+      title: day.title,
+      subtitle: day.subtitle,
+      esercizi: day.zones.flatMap(zone =>
+        zone.exercises.map(ex => ({
+          nome: ex.name,
+          serie: ex.sets,
+          tipo: ex.type,
+          note: ex.notes
+        }))
+      )
+    }));
+  };
+
   const handleDownload = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workoutData, null, 2));
+    const simplifiedData = convertToSimplified(workoutData);
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(simplifiedData, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
     downloadAnchorNode.setAttribute("download", "abruscheda_backup.json");
@@ -339,7 +355,8 @@ const App: React.FC = () => {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(JSON.stringify(workoutData, null, 2));
+    const simplifiedData = convertToSimplified(workoutData);
+    navigator.clipboard.writeText(JSON.stringify(simplifiedData, null, 2));
     alert('JSON copiato negli appunti!');
   };
 

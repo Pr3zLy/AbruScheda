@@ -34,38 +34,66 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
     }
   };
 
+  // Request notification permission on mount
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }, []);
+
   const playBeep = () => {
     try {
       initAudio();
       const ctx = audioContextRef.current!;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const playTone = (startTime: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, startTime); // A5 note
+        osc.connect(gain);
+        gain.connect(ctx.destination);
 
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.5, startTime + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.6);
 
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 1.2);
+        osc.start(startTime);
+        osc.stop(startTime + 0.6);
+      };
+
+      // Play twice
+      const now = ctx.currentTime;
+      playTone(now);
+      playTone(now + 0.8);
+
     } catch (e) {
       console.warn("Audio notification failed", e);
+    }
+  };
+
+  const sendNotification = () => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Recupero Terminato! 🔔", {
+        body: "È ora di tornare ad allenarsi!",
+        icon: "/icon.png" // Fallback icon if available, generic otherwise
+      });
     }
   };
 
   useEffect(() => {
     let interval: any = null;
     if (isActive && seconds > 0) {
+      // Use Date.now() for better accuracy against drift, 
+      // but simplistic decrement is often sufficient for short workout timers.
+      // To ensure background execution works better, simple setInterval is usually handled by browsers (1s throttle).
       interval = setInterval(() => {
         setSeconds((s) => s - 1);
       }, 1000);
     } else if (seconds === 0) {
       if (isActive) {
         playBeep();
+        sendNotification();
       }
       setIsActive(false);
       if (interval) clearInterval(interval);
