@@ -1,19 +1,23 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { RotateCcw, Pause, Play } from 'lucide-react';
+import { playNotificationSound } from '../notificationSounds';
 
 interface TimerProps {
   accent: string; // e.g., 'text-orange-600'
 }
 
 const Timer: React.FC<TimerProps> = ({ accent }) => {
-  const [seconds, setSeconds] = useState(60);
-  const [baseTime, setBaseTime] = useState(60);
+  const savedBase = parseInt(localStorage.getItem('timer-base-time') || '90');
+  const wasExpired = localStorage.getItem('timer-expired') === '1';
+  const [seconds, setSeconds] = useState(savedBase);
+  const [baseTime, setBaseTime] = useState(savedBase);
   const [isActive, setIsActive] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const lastClickRef = useRef<number>(0);
 
   // Wake Lock API to prevent Xiaomi/Android from killing background process
   const requestWakeLock = async () => {
@@ -59,6 +63,11 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
     }
   };
 
+  const playBeep = () => {
+    const soundId = localStorage.getItem('abruscheda-notification-sound') || 'beep-classic';
+    playNotificationSound(soundId);
+  };
+
   // Request notification permission on mount
   useEffect(() => {
     try {
@@ -70,37 +79,26 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
     }
   }, []);
 
-  const playBeep = () => {
-    try {
-      initAudio();
-      if (!audioContextRef.current) return;
-      const ctx = audioContextRef.current;
-
-      const playTone = (startTime: number) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, startTime);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        gain.gain.setValueAtTime(0, startTime);
-        gain.gain.linearRampToValueAtTime(0.5, startTime + 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.6);
-
-        osc.start(startTime);
-        osc.stop(startTime + 0.6);
-      };
-
-      const now = ctx.currentTime;
-      playTone(now);
-      playTone(now + 0.8);
-
-    } catch (e) {
-      console.warn("Audio notification failed", e);
+  // Auto-restart timer on mount if timer was expired
+  useEffect(() => {
+    if (wasExpired) {
+      localStorage.removeItem('timer-expired');
+      setIsActive(true);
     }
-  };
+  }, []);
+
+  // Auto-restart on tab visible if timer expired while away
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && localStorage.getItem('timer-expired') === '1') {
+        localStorage.removeItem('timer-expired');
+        setSeconds(baseTimeRef.current);
+        setIsActive(true);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
 
   const sendNotification = () => {
     try {
@@ -121,8 +119,24 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
   const SILENT_AUDIO = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA';
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isActiveRef = useRef(isActive);
+  const secondsRef = useRef(seconds);
+  const baseTimeRef = useRef(baseTime);
 
-  const updateMediaSession = (sec: number) => {
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
+
+  useEffect(() => {
+    secondsRef.current = seconds;
+  }, [seconds]);
+
+  useEffect(() => {
+    baseTimeRef.current = baseTime;
+    localStorage.setItem('timer-base-time', baseTime.toString());
+  }, [baseTime]);
+
+  const updateMediaSession = (sec: number, active: boolean) => {
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: `${sec}s`,
@@ -132,12 +146,7 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
           { src: '/icon.png', sizes: '128x128', type: 'image/png' },
         ]
       });
-      navigator.mediaSession.playbackState = 'playing';
-
-      // Setting action handlers is often required for the notification to be visible on mobile
-      navigator.mediaSession.setActionHandler('play', () => { /* no-op or resume */ });
-      navigator.mediaSession.setActionHandler('pause', () => { /* no-op or pause */ });
-      navigator.mediaSession.setActionHandler('stop', () => { /* no-op */ });
+      navigator.mediaSession.playbackState = active ? 'playing' : 'paused';
     }
   };
 
@@ -178,11 +187,38 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
       if (e.data === 'tick') {
         setSeconds((prev) => {
           const newVal = prev <= 1 ? 0 : prev - 1;
-          updateMediaSession(newVal);
+          updateMediaSession(newVal, true);
           return newVal;
         });
       }
     };
+
+    // Register Media Session action handlers once
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => {
+        initAudio();
+        if (audioRef.current) {
+          audioRef.current.play().catch((e) => console.warn('Audio play from MediaSession failed', e));
+        }
+        if (secondsRef.current === 0) {
+          setSeconds(baseTimeRef.current);
+        }
+        setIsActive(true);
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+        setIsActive(false);
+      });
+      navigator.mediaSession.setActionHandler('stop', () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+        setIsActive(false);
+        setSeconds(baseTimeRef.current);
+      });
+    }
 
     return () => {
       workerRef.current?.terminate();
@@ -198,7 +234,7 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
         audioRef.current.volume = 0.01; // Very quiet but not silent (prevents optimization)
         audioRef.current.play().catch((e) => console.warn('Audio play failed', e));
       }
-      updateMediaSession(seconds);
+      updateMediaSession(seconds, true);
     } else {
       workerRef.current?.postMessage('stop');
       audioRef.current?.pause();
@@ -206,6 +242,7 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
 
       if (seconds === 0 && isActive) {
         // Timer just finished
+        localStorage.setItem('timer-expired', '1');
         playBeep();
         sendNotification();
         setIsActive(false);
@@ -216,8 +253,9 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
           });
           navigator.mediaSession.playbackState = 'paused';
         }
-      } else if (seconds === 0 && !isActive) {
-        // Just ensures logic is consistent
+      } else if (seconds > 0) {
+        // Manually paused
+        updateMediaSession(seconds, false);
       }
     }
   }, [isActive, seconds]);
@@ -255,10 +293,17 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
     setIsActive(false);
   };
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
+  const handleTimerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsActive(false);
-    setIsEditing(true);
+    const now = Date.now();
+    const DOUBLE_CLICK_DELAY = 300;
+    if (now - lastClickRef.current < DOUBLE_CLICK_DELAY) {
+      setIsActive(false);
+      setIsEditing(true);
+      lastClickRef.current = 0;
+    } else {
+      lastClickRef.current = now;
+    }
   };
 
   const handleInputBlur = () => {
@@ -302,8 +347,8 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
             />
           ) : (
             <p
-              onDoubleClick={handleDoubleClick}
-              className="text-4xl font-mono font-black text-slate-800 dark:text-slate-100 leading-none tracking-tighter cursor-pointer select-none"
+              onClick={handleTimerClick}
+              className="text-4xl font-mono font-black text-slate-800 dark:text-slate-100 leading-none tracking-tighter cursor-pointer select-none touch-manipulation"
             >
               {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}
             </p>

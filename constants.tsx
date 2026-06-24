@@ -25,13 +25,6 @@ export const WORKOUT_DATA: WorkoutDay[] = [
           { name: "Pec Deck (Butterfly)", sets: "3 x 12", type: "chest", notes: "Isolamento finale petto" },
           { name: "Dips (Parallele)", sets: "3 x Max", type: "chest", notes: "Ultimo sforzo di spinta" }
         ]
-      },
-      {
-        name: "Zona Spalle & Tricipiti",
-        exercises: [
-          { name: "Alzate Laterali Manubri", sets: "3 x 15", type: "shoulders", notes: "Focus deltoide laterale" },
-          { name: "French Press + Extension", sets: "3 x 10+10", type: "triceps", notes: "Superset con manubri su panca" }
-        ]
       }
     ]
   },
@@ -61,9 +54,7 @@ export const WORKOUT_DATA: WorkoutDay[] = [
       {
         name: "Bassa Schiena & Bicipiti",
         exercises: [
-          { name: "Iperextensions", sets: "4 x 12-15", type: "back", notes: "Fondamentale per la tua carenza" },
-          { name: "Bicep Curl Machine", sets: "4 x 10-12", type: "biceps", notes: "Alla tua macchina preferita" },
-          { name: "Hammer Curl Manubri", sets: "3 x 10", type: "biceps", notes: "Falli anche seduto vicino alla macchina" }
+          { name: "Iperextensions", sets: "4 x 12-15", type: "back", notes: "Fondamentale per la tua carenza" }
         ]
       }
     ]
@@ -80,24 +71,33 @@ export const WORKOUT_DATA: WorkoutDay[] = [
       {
         name: "Zona Macchine",
         exercises: [
-          { name: "Chest Press Orizzontale", sets: "3 x 10", type: "chest", notes: "Inizia col petto (punto debole)" },
-          { name: "Lat Machine Inversa", sets: "4 x 10", type: "back", notes: "Alterna spinta e tirata" }
+          { name: "Chest Press Orizzontale", sets: "3 x 10", type: "chest", notes: "Adduci le scapole, mantieni il petto alto, spinta esplosiva e controlla il ritorno" },
+          { name: "Lat Machine Inversa", sets: "4 x 10", type: "back", notes: "Presa supina stretta, porta la sbarra al petto basso contraendo il dorso" }
         ]
       },
       {
         name: "Zona Panche & Macchine",
         exercises: [
-          { name: "Panca Inclinata Manubri", sets: "3 x 10-12", type: "chest", notes: "Zona panche" },
-          { name: "Vertical Row", sets: "3 x 10", type: "back", notes: "Zona macchine" }
+          { name: "Panca Inclinata Manubri", sets: "3 x 10-12", type: "chest", notes: "Panca a 30°, discesa controllata coi gomiti a 45°, spingi convergendoli in alto" },
+          { name: "Vertical Row", sets: "3 x 10", type: "back", notes: "Petto saldo sul cuscino, scapole addotte, tira coi gomiti per massimo stimolo" }
         ]
       },
       {
         name: "Stazione Cavi (Multi-task)",
         exercises: [
-          { name: "Face Pull ai Cavi", sets: "3 x 15", type: "shoulders", notes: "Posteriore spalle" },
-          { name: "Bicep Curl Machine", sets: "3 x 10 + Rest-Pause", type: "biceps", notes: "15\" pausa tra i micro-set finali" },
-          { name: "Pushdown Tricipiti", sets: "3 x 12", type: "triceps", notes: "Cavo alto - Stesso gancio per dopo" },
-          { name: "Curl Bicipiti", sets: "3 x 12", type: "biceps", notes: "Sposta il gancio in basso e chiudi" }
+          { name: "Face Pull ai Cavi", sets: "3 x 15", type: "shoulders", notes: "Tira la corda verso le orecchie separando le mani, focus deltoide posteriore" }
+        ]
+      },
+      {
+        name: "Zona Bicipiti",
+        exercises: [
+          { name: "Curl Bicipiti", sets: "3 x 12", type: "biceps", notes: "Cavo basso - Gomiti incollati ai fianchi, contrai forte al picco" }
+        ]
+      },
+      {
+        name: "Zona Avambracci",
+        exercises: [
+          { name: "Avambracci", sets: "4 x 10", type: "forearms", notes: "Fles.-est. polsi su panca, picco contrazione e bruciore controllato" }
         ]
       }
     ]
@@ -114,21 +114,59 @@ export const WORKOUT_DATA: WorkoutDay[] = [
       {
         name: "Zona Potenza",
         exercises: [
-          { name: "Squat al Macchinario", sets: "4 x 8-10", type: "legs", notes: "Hack squat o Smith Machine, massima profondità" },
-          { name: "Leg Press 45°", sets: "3 x 12", type: "legs", notes: "Piedi medi, focus spinta di tallone" }
+          { name: "Squat al Macchinario", sets: "4 x 8-10", type: "legs", notes: "Piedi posizionati per massima accosciata, scendi profondo, spingi con tutto il piede" },
+          { name: "Leg Press 45°", sets: "3 x 12", type: "legs", notes: "Scendi controllando senza sollevare il bacino, spingi forte dal tallone" }
         ]
       },
       {
         name: "Zona Isolamento",
         exercises: [
-          { name: "Leg Extension", sets: "4 x 15", type: "legs", notes: "Contrazione di 1 secondo in alto" },
-          { name: "Leg Curl (Seduto/Sdraiato)", sets: "4 x 12", type: "legs", notes: "Focus femorali, controlla il ritorno" }
+          { name: "Leg Extension", sets: "4 x 15", type: "legs", notes: "Schiena aderente allo schienale, tieni la contrazione di 1 sec nel punto massimo" },
+          { name: "Leg Curl (Seduto/Sdraiato)", sets: "4 x 12", type: "legs", notes: "Movimento controllato, tieni il bacino fermo e strizza i femorali alla fine" }
         ]
       },
       {
         name: "Zona Polpacci",
         exercises: [
-          { name: "Polpacci al Macchinario", sets: "4 x 20", type: "calves", notes: "Massimo stretching nella fase bassa" }
+          { name: "Polpacci al Macchinario", sets: "4 x 20", type: "calves", notes: "Pausa di 1 sec nel massimo allungamento in basso e in massima contrazione in alto" }
+        ]
+      }
+    ]
+  },
+  {
+    id: 5,
+    title: "ARM",
+    subtitle: "Focus: Braccia & Ipertrofia",
+    theme: "from-rose-500 to-red-600",
+    accent: "text-rose-600",
+    bgLight: "bg-rose-50",
+    bgDark: "dark:bg-rose-950/20",
+    zones: [
+      {
+        name: "Zona Tricipiti",
+        exercises: [
+          { name: "French Press + Extension", sets: "3 x 10+10", type: "triceps", notes: "French: gomiti in alto, discesa dietro testa. Extension: sopra testa, ROM completo" },
+          { name: "Pushdown Tricipiti", sets: "3 x 12", type: "triceps", notes: "Cavo alto - Gomiti fermi, spingi verso il basso e apri la corda alla fine" }
+        ]
+      },
+      {
+        name: "Zona Bicipiti",
+        exercises: [
+          { name: "Bicep Curl Machine", sets: "4 x 10-12", type: "biceps", notes: "ROM completo, gomiti fissi, contrazione picco 1 sec, lento in negativo" },
+          { name: "Hammer Curl Manubri", sets: "3 x 10", type: "biceps", notes: "Presa neutra, gomito fisso, esecuzione lenta e controllata" },
+          { name: "Curl Bicipiti", sets: "3 x 12", type: "biceps", notes: "Cavo basso - Gomiti bloccati ai fianchi, strizza forte e controlla l'eccentrica" }
+        ]
+      },
+      {
+        name: "Zona Spalle",
+        exercises: [
+          { name: "Alzate Laterali Manubri", sets: "3 x 15", type: "shoulders", notes: "Niente slancio, gomiti leggermente piegati, ROM completo ma controllato" }
+        ]
+      },
+      {
+        name: "Zona Avambracci",
+        exercises: [
+          { name: "Avambracci", sets: "4 x 10", type: "forearms", notes: "Fles.-est. polsi su panca, picco contrazione e bruciore controllato" }
         ]
       }
     ]

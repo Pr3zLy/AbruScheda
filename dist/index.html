@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypertrophy Hub</title>
+    <title>AbruScheda</title>
     <meta name="description"
-        content="Track your workouts, log exercises, and maximize muscle hypertrophy with Hypertrophy Hub.">
+        content="Monitora i tuoi allenamenti, registra i progressi e massimizza l'ipertrofia con AbruScheda.">
+    <link rel="manifest" href="./assets/manifest-CHYCJNno.json">
+    <meta name="theme-color" content="#ea580c">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -57,6 +59,42 @@
         .float-anim {
             animation: subtle-float 3s ease-in-out infinite;
         }
+
+        /* Modern Scrollbar */
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            /* slate-300 */
+            border-radius: 20px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+            /* slate-400 */
+        }
+
+        /* Dark mode scrollbar */
+
+        .dark ::-webkit-scrollbar-thumb {
+            background-color: #334155;
+            /* slate-700 */
+        }
+
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background-color: #475569;
+            /* slate-600 */
+        }
     </style>
 
     <script type="importmap">
@@ -70,7 +108,7 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="./assets/index-DgP6f4wD.js"></script>
+  <script type="module" crossorigin src="./assets/index-QPak3ixj.js"></script>
 </head>
 
 <body class="bg-slate-50 dark:bg-[#020617] transition-colors duration-300">

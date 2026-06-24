@@ -3,45 +3,42 @@ import React, { useState, useEffect } from 'react';
 import {
   Dumbbell,
   CheckCircle2,
-  Flame,
-  Zap,
   MapPin,
   Trophy,
   Sun,
   Moon,
-  Construction,
   Upload,
   Download,
   Copy,
   RotateCcw,
   X,
   FileJson,
-  Sparkles,
   Bot
 } from 'lucide-react';
-import WORKOUT_DATA_SEMPLIFICATO from './workout_data.json';
+import SIMPLIFIED_WORKOUT_DATA from './workout_data.json';
 import { WorkoutDay } from './types';
+import { NOTIFICATION_SOUNDS, playNotificationSound } from './notificationSounds';
 
-// Funzione per convertire la struttura semplificata in struttura completa
-const convertiStrutturaSemplificata = (data: any[]): WorkoutDay[] => {
-  return data.map((scheda, index) => {
-    // Raggruppa esercizi per tipo per creare zone automaticamente
-    const gruppiPerTipo: Record<string, any[]> = {};
+// Convert the simplified JSON workout structure to the complete internal structure
+const convertSimplifiedStructure = (data: any[]): WorkoutDay[] => {
+  return data.map((day, index) => {
+    // Group exercises by muscle group type to automatically partition into zones
+    const groupsByType: Record<string, any[]> = {};
 
-    scheda.esercizi.forEach((es: any) => {
-      if (!gruppiPerTipo[es.tipo]) {
-        gruppiPerTipo[es.tipo] = [];
+    day.esercizi.forEach((ex: any) => {
+      if (!groupsByType[ex.tipo]) {
+        groupsByType[ex.tipo] = [];
       }
-      gruppiPerTipo[es.tipo].push({
-        name: es.nome,
-        sets: es.serie,
-        type: es.tipo,
-        notes: es.note
+      groupsByType[ex.tipo].push({
+        name: ex.nome,
+        sets: ex.serie,
+        type: ex.tipo,
+        notes: ex.note
       });
     });
 
-    // Mappa dei tipi a nomi di zone più chiari
-    const nomiZona: Record<string, string> = {
+    // Map muscle group keys to human-readable zone names
+    const zoneNames: Record<string, string> = {
       chest: "Zona Petto",
       back: "Zona Schiena",
       shoulders: "Zona Spalle",
@@ -51,37 +48,42 @@ const convertiStrutturaSemplificata = (data: any[]): WorkoutDay[] => {
       calves: "Zona Polpacci"
     };
 
-    const zones = Object.entries(gruppiPerTipo).map(([tipo, exercises]) => ({
-      name: nomiZona[tipo] || `Zona ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`,
+    const zones = Object.entries(groupsByType).map(([type, exercises]) => ({
+      name: zoneNames[type] || `Zona ${type.charAt(0).toUpperCase() + type.slice(1)}`,
       exercises: exercises
     }));
 
-    // Determina tema e colori basati sul titolo
-    const titoloLower = scheda.title.toLowerCase();
+    // Determine theme colors based on the workout day title
+    const titleLower = day.title.toLowerCase();
     let theme, accent, bgLight, bgDark;
 
-    if (titoloLower.includes('push')) {
+    if (titleLower.includes('push')) {
       theme = "from-orange-500 to-red-600";
       accent = "text-orange-600";
       bgLight = "bg-orange-50";
       bgDark = "dark:bg-orange-950/20";
-    } else if (titoloLower.includes('pull')) {
+    } else if (titleLower.includes('pull')) {
       theme = "from-blue-500 to-indigo-600";
       accent = "text-blue-600";
       bgLight = "bg-blue-50";
       bgDark = "dark:bg-blue-950/20";
-    } else if (titoloLower.includes('upper') || titoloLower.includes('mix')) {
+    } else if (titleLower.includes('upper') || titleLower.includes('mix')) {
       theme = "from-purple-500 to-pink-600";
       accent = "text-purple-600";
       bgLight = "bg-purple-50";
       bgDark = "dark:bg-purple-950/20";
-    } else if (titoloLower.includes('leg')) {
+    } else if (titleLower.includes('leg')) {
       theme = "from-emerald-500 to-teal-600";
       accent = "text-emerald-600";
       bgLight = "bg-emerald-50";
       bgDark = "dark:bg-emerald-950/20";
+    } else if (titleLower.includes('arm')) {
+      theme = "from-rose-500 to-red-600";
+      accent = "text-rose-600";
+      bgLight = "bg-rose-50";
+      bgDark = "dark:bg-rose-950/20";
     } else {
-      // Default colors
+      // Default fallback colors
       theme = "from-slate-500 to-slate-600";
       accent = "text-slate-600";
       bgLight = "bg-slate-50";
@@ -90,8 +92,8 @@ const convertiStrutturaSemplificata = (data: any[]): WorkoutDay[] => {
 
     return {
       id: index + 1,
-      title: scheda.title,
-      subtitle: scheda.subtitle,
+      title: day.title,
+      subtitle: day.subtitle,
       theme: theme,
       accent: accent,
       bgLight: bgLight,
@@ -101,7 +103,7 @@ const convertiStrutturaSemplificata = (data: any[]): WorkoutDay[] => {
   });
 };
 
-const WORKOUT_DATA = convertiStrutturaSemplificata(WORKOUT_DATA_SEMPLIFICATO);
+const WORKOUT_DATA = convertSimplifiedStructure(SIMPLIFIED_WORKOUT_DATA);
 import TypeIcon from './components/TypeIcon';
 import Timer from './components/Timer';
 
@@ -218,10 +220,17 @@ const App: React.FC = () => {
 
   const [workoutData, setWorkoutData] = useState<WorkoutDay[]>(WORKOUT_DATA);
   const [showDataModal, setShowDataModal] = useState(false);
+  const [selectedSound, setSelectedSound] = useState(() => {
+    return localStorage.getItem('abruscheda-notification-sound') || 'beep-classic';
+  });
 
   useEffect(() => {
     localStorage.setItem('custom_workout_data', JSON.stringify(workoutData));
   }, [workoutData]);
+
+  useEffect(() => {
+    localStorage.setItem('abruscheda-notification-sound', selectedSound);
+  }, [selectedSound]);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -291,23 +300,23 @@ const App: React.FC = () => {
         if (!Array.isArray(data)) throw new Error("Il file deve contenere un array di schede.");
         if (data.length === 0) throw new Error("Il file è vuoto.");
 
-        // Rileva se è il formato semplificato (quello generato dall'AI)
+        // Detect if input is in the simplified structure format
         const isSimplified = 'esercizi' in data[0] && !('zones' in data[0]);
 
         let finalData: WorkoutDay[];
 
         if (isSimplified) {
           try {
-            finalData = convertiStrutturaSemplificata(data);
+            finalData = convertSimplifiedStructure(data);
           } catch (e) {
             throw new Error("Errore durante la conversione del formato semplificato. Verifica la struttura.");
           }
         } else {
-          // Valida il formato completo
+          // Validate complete format structure
           if (validateWorkoutData(data)) {
             finalData = data;
           } else {
-            // Questo punto non dovrebbe essere raggiunto perché validateWorkoutData lancia eccezioni
+            // Fallback case (validation handles throwing errors)
             throw new Error("Formato dati non valido.");
           }
         }
@@ -369,8 +378,8 @@ const App: React.FC = () => {
   };
 
   const handleGenerateWithAI = (platform: 'gemini' | 'gpt' | 'grok') => {
-    // Costruiamo il prompt completo da inserire nel link
-    const basePrompt = "Agisci come un Personal Trainer esperto. Memorizza questa struttura JSON per creare schede di allenamento di alta qualità. Nelle prossime risposte, quando ti chiederò di creare una scheda, rispondi ESCLUSIVAMENTE con un JSON valido che rispetti questo formato, ottimizzando volume, scelta degli esercizi e note tecniche per l'ipertrofia. STRUTTURA DA MEMORIZZARE:";
+    // Build the full prompt to encode in the external helper URLs
+    const basePrompt = "Agisci come un Personal Trainer esperto. Memorizza questa struttura JSON per creare schede di allenamento personalizzate di alta qualità. Inizialmente, guida l'utente facendogli domande per comprendere il suo obiettivo specifico, livello ed esigenze, per poi creare la scheda più adatta. Nelle risposte successive, quando ti verrà chiesto di generare la scheda, rispondi ESCLUSIVAMENTE con un JSON valido che rispetti questo formato, ottimizzando volume, scelta degli esercizi e note tecniche in base all'obiettivo dell'utente. STRUTTURA DA MEMORIZZARE:";
     const fullPrompt = `${basePrompt}\n${EXAMPLE_JSON_STRUCTURE}`;
     const encodedPrompt = encodeURIComponent(fullPrompt);
 
@@ -455,6 +464,16 @@ const App: React.FC = () => {
     }));
   };
 
+  const resetZoneExercises = (dayId: number, exercises: { name: string }[]) => {
+    setCompletedExercises(prev => {
+      const next = { ...prev };
+      exercises.forEach(ex => {
+        delete next[`${dayId}-${ex.name}`];
+      });
+      return next;
+    });
+  };
+
   const getProgress = () => {
     const totalExercises = activeDay.zones.reduce((acc, zone) => acc + zone.exercises.length, 0);
     const completedCount = activeDay.zones.reduce((acc, zone) => {
@@ -479,6 +498,17 @@ const App: React.FC = () => {
               <p className="text-white/90 mt-2 text-sm font-medium">{activeDay.subtitle}</p>
             </div>
             <div className="flex gap-2">
+              <a
+                href="https://github.com/Pr3zLy/AbruScheda"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white/20 backdrop-blur-xl p-3 rounded-2xl hover:bg-white/30 transition-colors active:scale-90"
+                aria-label="GitHub"
+              >
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+              </a>
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className="bg-white/20 backdrop-blur-xl p-3 rounded-2xl hover:bg-white/30 transition-colors active:scale-90"
@@ -495,19 +525,26 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-2 mb-2 py-2">
-            {workoutData.map((day, idx) => (
-              <button
-                key={day.id}
-                onClick={() => setActiveDayIdx(idx)}
-                className={`flex-1 min-w-[45%] sm:min-w-0 px-4 py-3 rounded-full text-xs font-black whitespace-nowrap transition-all uppercase tracking-tighter ${activeDayIdx === idx
-                  ? 'bg-white text-slate-900 shadow-xl scale-105'
-                  : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
-              >
-                {day.title}
-              </button>
-            ))}
+          <div className="grid grid-cols-2 gap-2 mb-2 py-2 sm:flex sm:flex-wrap sm:justify-center">
+            {workoutData.map((day, idx) => {
+              const isLastOdd = workoutData.length % 2 !== 0;
+              const isLastItem = idx === workoutData.length - 1;
+              return (
+                <button
+                  key={day.id}
+                  onClick={() => setActiveDayIdx(idx)}
+                  className={`px-4 py-3 rounded-full text-xs font-black sm:whitespace-nowrap transition-all uppercase tracking-tighter text-center flex items-center justify-center ${
+                    isLastOdd && isLastItem ? 'col-span-2' : ''
+                  } ${
+                    activeDayIdx === idx
+                      ? 'bg-white text-slate-900 shadow-xl scale-105'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  } sm:flex-1 sm:min-w-0`}
+                >
+                  {day.title}
+                </button>
+              );
+            })}
           </div>
         </div>
       </header>
@@ -539,42 +576,70 @@ const App: React.FC = () => {
 
         {/* Exercises Section */}
         <div className="space-y-4 pb-10">
-          {activeDay.zones.flatMap(zone => zone.exercises).map((ex, idx) => {
-            const isDone = completedExercises[`${activeDay.id}-${ex.name}`];
+          {(() => {
+            const allExercises = activeDay.zones.flatMap(zone => zone.exercises);
+            const hasCompleted = allExercises.some(ex => completedExercises[`${activeDay.id}-${ex.name}`]);
 
             return (
-              <div
-                key={idx}
-                onClick={() => toggleExercise(activeDay.id, ex.name)}
-                className={`group relative p-4 rounded-[2rem] transition-all duration-300 cursor-pointer border ${isDone
-                  ? 'bg-slate-100 dark:bg-slate-900/30 border-transparent opacity-50 scale-[0.98]'
-                  : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-none hover:border-slate-200 dark:hover:border-slate-700'
-                  }`}
-              >
-                <div className="flex items-start gap-4">
-                  <div className={`mt-1 p-3 rounded-2xl transition-all ${isDone ? 'bg-green-100 dark:bg-green-900/20 text-green-600' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:scale-110'}`}>
-                    {isDone ? <CheckCircle2 className="w-5 h-5" /> : <TypeIcon type={ex.type} isDone={isDone} />}
+              <>
+                {hasCompleted && (
+                  <div className="flex justify-end px-1 mb-2">
+                    <button
+                      onClick={() => {
+                        setCompletedExercises(prev => {
+                          const next = { ...prev };
+                          allExercises.forEach(ex => {
+                            delete next[`${activeDay.id}-${ex.name}`];
+                          });
+                          return next;
+                        });
+                      }}
+                      className="flex items-center gap-1 text-[10px] font-bold text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 transition-colors uppercase tracking-wider"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      Reset Sessione
+                    </button>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start gap-2">
-                      <h4 className={`font-bold transition-all flex-1 ${isDone ? 'line-through text-slate-500 dark:text-slate-600' : 'text-slate-800 dark:text-slate-100 text-lg leading-tight'}`}>
-                        {ex.name}
-                      </h4>
-                      <span className={`shrink-0 inline-flex items-center text-xs font-black px-2.5 py-1 rounded-lg uppercase tracking-wider ${isDone ? 'bg-slate-200 dark:bg-slate-800 text-slate-500' : `${activeDay.bgLight} ${activeDay.bgDark} ${activeDay.accent}`}`}>
-                        {ex.sets}
-                      </span>
-                    </div>
+                )}
+                {allExercises.map((ex, idx) => {
+                  const isDone = completedExercises[`${activeDay.id}-${ex.name}`];
 
-                    <div className="mt-2 text-center">
-                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2">
-                        {ex.notes}
-                      </p>
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => toggleExercise(activeDay.id, ex.name)}
+                      className={`group relative p-4 rounded-[2rem] transition-all duration-300 cursor-pointer border ${isDone
+                        ? 'bg-slate-100 dark:bg-slate-900/30 border-transparent opacity-50 scale-[0.98]'
+                        : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-none hover:border-slate-200 dark:hover:border-slate-700'
+                        }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`mt-1 p-3 rounded-2xl transition-all ${isDone ? 'bg-green-100 dark:bg-green-900/20 text-green-600' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:scale-110'}`}>
+                          {isDone ? <CheckCircle2 className="w-5 h-5" /> : <TypeIcon type={ex.type} isDone={isDone} />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start gap-2">
+                            <h4 className={`font-bold transition-all flex-1 ${isDone ? 'line-through text-slate-500 dark:text-slate-600' : 'text-slate-800 dark:text-slate-100 text-lg leading-tight'}`}>
+                              {ex.name}
+                            </h4>
+                            <span className={`shrink-0 inline-flex items-center text-xs font-black px-2.5 py-1 rounded-lg uppercase tracking-wider ${isDone ? 'bg-slate-200 dark:bg-slate-800 text-slate-500' : `${activeDay.bgLight} ${activeDay.bgDark} ${activeDay.accent}`}`}>
+                              {ex.sets}
+                            </span>
+                          </div>
+
+                          <div className="mt-2 text-center">
+                            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-snug line-clamp-2">
+                              {ex.notes}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                  );
+                })}
+              </>
             );
-          })}
+          })()}
         </div>
 
         {progress === 100 && (
@@ -598,19 +663,15 @@ const App: React.FC = () => {
       </main>
 
       {/* Unified Bottom Nav */}
-      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md p-1 bg-white/80 dark:bg-slate-900/90 backdrop-blur-2xl rounded-full border border-slate-200 dark:border-slate-800 shadow-2xl z-50 transition-all duration-500 ${isScrolled ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
-        <div className="flex justify-around items-center">
+      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md p-1.5 bg-white/80 dark:bg-slate-900/90 backdrop-blur-2xl rounded-full border border-slate-200 dark:border-slate-800 shadow-2xl z-50 transition-all duration-500 ${isScrolled ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
+        <div className="flex justify-between items-center gap-1">
           {workoutData.map((day, idx) => (
             <button
               key={day.id}
-              className={`flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-full transition-all flex-1 ${activeDayIdx === idx ? `${day.accent.replace('text', 'bg')} text-white scale-105 shadow-lg` : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
+              className={`py-2.5 px-1 rounded-full transition-all duration-300 flex-1 text-center justify-center items-center flex ${activeDayIdx === idx ? `${day.accent.replace('text', 'bg')} text-white font-black shadow-md scale-105` : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}
               onClick={() => setActiveDayIdx(idx)}
             >
-              {idx === 0 && <Flame className="w-4 h-4" />}
-              {idx === 1 && <Zap className="w-4 h-4" />}
-              {idx === 2 && <Dumbbell className="w-4 h-4" />}
-              {idx === 3 && <Construction className="w-4 h-4" />}
-              <span className="text-[7px] font-black tracking-widest uppercase">{day.title.split(' ')[0]}</span>
+              <span className="text-[9px] sm:text-[10px] font-black tracking-widest uppercase">{day.title.split(' ')[0]}</span>
             </button>
           ))}
         </div>
@@ -662,7 +723,7 @@ const App: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Crea SCHEDA con AI 100% GRATIS</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Genera Prompt per IA</label>
                 <div className="grid grid-cols-3 gap-3">
                   <button onClick={() => handleGenerateWithAI('gemini')} className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800 hover:scale-[1.02] transition-transform group">
                     <img
@@ -708,6 +769,55 @@ const App: React.FC = () => {
                     {EXAMPLE_JSON_STRUCTURE}
                   </pre>
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Suono Notifica Timer</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {NOTIFICATION_SOUNDS.map((sound) => (
+                    <button
+                      key={sound.id}
+                      onClick={() => {
+                        setSelectedSound(sound.id);
+                        playNotificationSound(sound.id);
+                      }}
+                      className={`flex items-center gap-2 p-2.5 rounded-xl border transition-all text-left ${
+                        selectedSound === sound.id
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      }`}
+                    >
+                      <div className={`w-2 h-2 rounded-full ${
+                        selectedSound === sound.id ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'
+                      }`} />
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{sound.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
+                  <span className="text-lg">?</span> Come usare il Timer
+                </h4>
+                <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-500 mt-0.5">1.</span>
+                    <span><strong>Tap</strong> sul tempo per avviare/pausare il timer</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-500 mt-0.5">2.</span>
+                    <span><strong>Double click</strong> sul tempo per inserire un tempo personalizzato</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-500 mt-0.5">3.</span>
+                    <span>Usa i pulsanti <strong>60s / 90s / 120s</strong> per selezionarepreset</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-500 mt-0.5">4.</span>
+                    <span>Il suono di notifica si sente allo scadere del tempo</span>
+                  </li>
+                </ul>
               </div>
 
               <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
