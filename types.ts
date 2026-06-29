@@ -8,11 +8,6 @@ export interface Exercise {
   notes: string;
 }
 
-export interface GymZone {
-  name: string;
-  exercises: Exercise[];
-}
-
 export interface WorkoutDay {
   id: number;
   title: string;
@@ -21,5 +16,5 @@ export interface WorkoutDay {
   accent: string;
   bgLight: string;
   bgDark: string;
-  zones: GymZone[];
+  exercises: Exercise[];
 }

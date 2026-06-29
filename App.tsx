@@ -85,38 +85,13 @@ const THEME_PRESETS = [
   }
 ];
 
-// Convert the simplified JSON workout structure to the complete internal structure
 const convertSimplifiedStructure = (data: any[]): WorkoutDay[] => {
   return data.map((day, index) => {
-    // Group exercises by muscle group type to automatically partition into zones
-    const groupsByType: Record<string, any[]> = {};
-
-    day.esercizi.forEach((ex: any) => {
-      if (!groupsByType[ex.tipo]) {
-        groupsByType[ex.tipo] = [];
-      }
-      groupsByType[ex.tipo].push({
-        name: ex.nome,
-        sets: ex.serie,
-        type: ex.tipo,
-        notes: ex.note
-      });
-    });
-
-    // Map muscle group keys to human-readable zone names
-    const zoneNames: Record<string, string> = {
-      chest: "Zona Petto",
-      back: "Zona Schiena",
-      shoulders: "Zona Spalle",
-      legs: "Zona Gambe",
-      triceps: "Zona Tricipiti",
-      biceps: "Zona Bicipiti",
-      calves: "Zona Polpacci"
-    };
-
-    const zones = Object.entries(groupsByType).map(([type, exercises]) => ({
-      name: zoneNames[type] || `Zona ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-      exercises: exercises
+    const exercises = day.esercizi.map((ex: any) => ({
+      name: ex.nome,
+      sets: ex.serie,
+      type: ex.tipo,
+      notes: ex.note || ''
     }));
 
     // Assign theme based on order of workout day
@@ -130,7 +105,7 @@ const convertSimplifiedStructure = (data: any[]): WorkoutDay[] => {
       accent: themePreset.accent,
       bgLight: themePreset.bgLight,
       bgDark: themePreset.bgDark,
-      zones: zones
+      exercises: exercises
     };
   });
 };
@@ -255,7 +230,10 @@ const App: React.FC = () => {
     const savedData = localStorage.getItem('custom_workout_data');
     if (savedData) {
       try {
-        return JSON.parse(savedData);
+        const parsed = JSON.parse(savedData);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0] && ('exercises' in parsed[0])) {
+          return parsed;
+        }
       } catch (e) {
         console.error("Failed to parse custom_workout_data", e);
       }
@@ -298,7 +276,16 @@ const App: React.FC = () => {
     };
   }, [showDataModal]);
 
-  const activeDay = workoutData[activeDayIdx] || workoutData[0];
+  const activeDay = workoutData[activeDayIdx] || workoutData[0] || {
+    id: 1,
+    title: "Caricamento...",
+    subtitle: "",
+    theme: "from-orange-500 to-red-600",
+    accent: "text-orange-600",
+    bgLight: "bg-orange-50",
+    bgDark: "dark:bg-orange-950/20",
+    exercises: []
+  };
 
   const validateWorkoutData = (data: any): data is WorkoutDay[] => {
     if (!Array.isArray(data)) throw new Error("Il file deve contenere un array di schede.");
@@ -306,24 +293,18 @@ const App: React.FC = () => {
     data.forEach((day, index) => {
       if (typeof day !== 'object' || day === null) throw new Error(`L'elemento ${index + 1} non è un oggetto valido.`);
 
-      const requiredDayFields = ['id', 'title', 'subtitle', 'theme', 'accent', 'bgLight', 'bgDark', 'zones'];
+      const requiredDayFields = ['id', 'title', 'subtitle', 'theme', 'accent', 'bgLight', 'bgDark', 'exercises'];
       requiredDayFields.forEach(field => {
         if (!(field in day)) throw new Error(`Scheda ${index + 1}: Manca il campo obbligatorio '${field}'.`);
       });
 
-      if (!Array.isArray(day.zones)) throw new Error(`Scheda ${index + 1}: 'zones' deve essere un array.`);
+      if (!Array.isArray(day.exercises)) throw new Error(`Scheda ${index + 1}: 'exercises' deve essere un array.`);
 
-      day.zones.forEach((zone: any, zIndex: number) => {
-        if (typeof zone !== 'object' || zone === null) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}: Non valido.`);
-        if (!('name' in zone)) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}: Manca il nome.`);
-        if (!Array.isArray(zone.exercises)) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}: 'exercises' deve essere un array.`);
-
-        zone.exercises.forEach((ex: any, eIndex: number) => {
-          if (typeof ex !== 'object' || ex === null) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}, Esercizio ${eIndex + 1}: Non valido.`);
-          const reqExFields = ['name', 'sets', 'type', 'notes'];
-          reqExFields.forEach(f => {
-            if (!(f in ex)) throw new Error(`Scheda ${index + 1}, Zona ${zIndex + 1}, Esercizio ${eIndex + 1}: Manca '${f}'.`);
-          });
+      day.exercises.forEach((ex: any, eIndex: number) => {
+        if (typeof ex !== 'object' || ex === null) throw new Error(`Scheda ${index + 1}, Esercizio ${eIndex + 1}: Non valido.`);
+        const reqExFields = ['name', 'sets', 'type', 'notes'];
+        reqExFields.forEach(f => {
+          if (!(f in ex)) throw new Error(`Scheda ${index + 1}, Esercizio ${eIndex + 1}: Manca '${f}'.`);
         });
       });
     });
@@ -336,7 +317,7 @@ const App: React.FC = () => {
     if (data.length === 0) throw new Error("Il file è vuoto.");
 
     // Detect if input is in the simplified structure format
-    const isSimplified = 'esercizi' in data[0] && !('zones' in data[0]);
+    const isSimplified = 'esercizi' in data[0] && !('exercises' in data[0]);
 
     let finalData: WorkoutDay[];
 
@@ -429,14 +410,12 @@ const App: React.FC = () => {
     return data.map(day => ({
       title: day.title,
       subtitle: day.subtitle,
-      esercizi: day.zones.flatMap(zone =>
-        zone.exercises.map(ex => ({
-          nome: ex.name,
-          serie: ex.sets,
-          tipo: ex.type,
-          note: ex.notes
-        }))
-      )
+      esercizi: day.exercises.map(ex => ({
+        nome: ex.name,
+        serie: ex.sets,
+        tipo: ex.type,
+        note: ex.notes
+      }))
     }));
   };
 
@@ -490,46 +469,36 @@ const App: React.FC = () => {
         accent: "text-blue-500",
         bgLight: "bg-blue-50",
         bgDark: "bg-blue-900/20",
-        zones: [
+        exercises: [
           {
-            name: "Zona Esempio (Panche/Banchina)",
-            exercises: [
-              {
-                name: "Panca Piana con Bilanciere",
-                sets: "4 x 6-8",
-                type: "chest",
-                notes: "Focus su controllo eccentrico, 2-3 sec di discesa"
-              },
-              {
-                name: "Chest Press Machine",
-                sets: "3 x 10-12",
-                type: "chest",
-                notes: "Mantenere le scapole addotte, respirazione corretta"
-              },
-              {
-                name: "Chest Fly (Pettorali)",
-                sets: "3 x 12-15",
-                type: "chest",
-                notes: "ROM completo, stretch massimo in negativo"
-              }
-            ]
+            name: "Panca Piana con Bilanciere",
+            sets: "4 x 6-8",
+            type: "chest",
+            notes: "Focus su controllo eccentrico, 2-3 sec di discesa"
           },
           {
-            name: "Zona Spalle & Tricipiti",
-            exercises: [
-              {
-                name: "Lateral Raises (Alzate Laterali)",
-                sets: "4 x 12-15",
-                type: "shoulders",
-                notes: "No slancio, controllare la fase eccentrica"
-              },
-              {
-                name: "Dips alle Parallele",
-                sets: "3 x 8-10",
-                type: "triceps",
-                notes: "Inclinazione in avanti per enfasi petto, laterale per tricipiti"
-              }
-            ]
+            name: "Chest Press Machine",
+            sets: "3 x 10-12",
+            type: "chest",
+            notes: "Mantenere le scapole addotte, respirazione corretta"
+          },
+          {
+            name: "Chest Fly (Pettorali)",
+            sets: "3 x 12-15",
+            type: "chest",
+            notes: "ROM completo, stretch massimo in negativo"
+          },
+          {
+            name: "Lateral Raises (Alzate Laterali)",
+            sets: "4 x 12-15",
+            type: "shoulders",
+            notes: "No slancio, controllare la fase eccentrica"
+          },
+          {
+            name: "Dips alle Parallele",
+            sets: "3 x 8-10",
+            type: "triceps",
+            notes: "Inclinazione in avanti per enfasi petto, laterale per tricipiti"
           }
         ]
       }
@@ -563,10 +532,9 @@ const App: React.FC = () => {
   };
 
   const getProgress = () => {
-    const totalExercises = activeDay.zones.reduce((acc, zone) => acc + zone.exercises.length, 0);
-    const completedCount = activeDay.zones.reduce((acc, zone) => {
-      return acc + zone.exercises.filter(ex => completedExercises[`${activeDay.id}-${ex.name}`]).length;
-    }, 0);
+    const exercisesList = activeDay?.exercises || [];
+    const totalExercises = exercisesList.length;
+    const completedCount = exercisesList.filter(ex => completedExercises[`${activeDay.id}-${ex.name}`]).length;
     return totalExercises === 0 ? 0 : Math.round((completedCount / totalExercises) * 100);
   };
 
@@ -583,7 +551,7 @@ const App: React.FC = () => {
             <div>
               <p className="text-white/80 font-medium uppercase tracking-widest text-[10px] mb-1">Sessione {activeDay.id}</p>
               <h1 className="text-4xl font-black italic tracking-tight uppercase leading-none">{activeDay.title}</h1>
-              <p className="text-white/90 mt-2 text-sm font-medium">{activeDay.subtitle}</p>
+              <p className="text-white/90 mt-2 text-sm font-medium truncate">{activeDay.subtitle}</p>
             </div>
             <div className="flex gap-2">
               <a
@@ -678,8 +646,8 @@ const App: React.FC = () => {
         {/* Exercises Section */}
         <div className="space-y-4 pb-10">
           {(() => {
-            const allExercises = activeDay.zones.flatMap(zone => zone.exercises);
-            const hasCompleted = allExercises.some(ex => completedExercises[`${activeDay.id}-${ex.name}`]);
+            const allExercises = activeDay?.exercises || [];
+            const hasCompleted = allExercises.some(ex => ex && completedExercises[`${activeDay.id}-${ex.name}`]);
 
             return (
               <>
