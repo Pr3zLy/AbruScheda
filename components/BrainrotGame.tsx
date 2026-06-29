@@ -44,9 +44,17 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
   });
   const [customImage, setCustomImage] = useState(() => localStorage.getItem('brainrot-custom-image') || '');
   const [showResetButton, setShowResetButton] = useState(false);
-  const [imageZoom, setImageZoom] = useState(() => {
-    const z = localStorage.getItem('brainrot-image-zoom');
-    return z ? parseFloat(z) : 1.0;
+  const [imageZoomMap, setImageZoomMap] = useState<Record<number, number>>(() => {
+    const raw = localStorage.getItem('brainrot-image-zoom-map');
+    if (raw) {
+      try { return JSON.parse(raw); } catch { /* ignore */ }
+    }
+    // Legacy fallback: single zoom value → apply to all base images
+    const legacy = localStorage.getItem('brainrot-image-zoom');
+    const val = legacy ? parseFloat(legacy) : 1.0;
+    const map: Record<number, number> = {};
+    BASE_IMAGE_ASSETS.forEach((_, i) => { map[i] = val; });
+    return map;
   });
 
   const IMAGE_ASSETS = [...BASE_IMAGE_ASSETS];
@@ -84,8 +92,13 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
   }, [gameOver]);
 
   useEffect(() => {
-    localStorage.setItem('brainrot-image-zoom', String(imageZoom));
-  }, [imageZoom]);
+    localStorage.setItem('brainrot-image-zoom-map', JSON.stringify(imageZoomMap));
+  }, [imageZoomMap]);
+
+  const getCurrentZoom = () => imageZoomMap[currentImageIndex] ?? 1.0;
+  const setCurrentZoom = (val: number) => {
+    setImageZoomMap(prev => ({ ...prev, [currentImageIndex]: val }));
+  };
 
   const playRandomSound = () => {
     if (isMuted || volume === 0) return;
@@ -423,7 +436,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
                           src={IMAGE_ASSETS[currentImageIndex % IMAGE_ASSETS.length]} 
                           alt="brainrot asset" 
                           className="w-[115%] h-[125%] object-contain pointer-events-none select-none"
-                          style={{ transform: `translateY(15%) scale(${imageZoom})` }}
+                          style={{ transform: `translateY(15%) scale(${getCurrentZoom()})` }}
                           draggable="false"
                         />
                       </div>
@@ -538,12 +551,12 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
                   min="0.5"
                   max="2.0"
                   step="0.05"
-                  value={imageZoom}
-                  onChange={(e) => setImageZoom(parseFloat(e.target.value))}
+                  value={getCurrentZoom()}
+                  onChange={(e) => setCurrentZoom(parseFloat(e.target.value))}
                   className="flex-1 accent-purple-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer touch-none"
                 />
                 <span className="text-[9px] font-mono text-slate-400 w-8 text-right">
-                  {Math.round(imageZoom * 100)}%
+                  {Math.round(getCurrentZoom() * 100)}%
                 </span>
               </div>
             </div>
