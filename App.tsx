@@ -528,17 +528,30 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mb-2 py-2 sm:flex sm:flex-wrap sm:justify-center">
+          <div className={`grid gap-2 mb-2 py-2 sm:flex sm:flex-wrap sm:justify-center ${
+            workoutData.length === 5 ? 'grid-cols-4' : 'grid-cols-2'
+          }`}>
             {workoutData.map((day, idx) => {
+              const isLength5 = workoutData.length === 5;
               const isLastOdd = workoutData.length % 2 !== 0;
               const isLastItem = idx === workoutData.length - 1;
+              
+              let gridColClass = '';
+              if (isLength5) {
+                if (idx === 2) {
+                  gridColClass = 'col-span-2 col-start-2';
+                } else {
+                  gridColClass = 'col-span-2';
+                }
+              } else if (isLastOdd && isLastItem) {
+                gridColClass = 'col-span-2';
+              }
+
               return (
                 <button
                   key={day.id}
                   onClick={() => setActiveDayIdx(idx)}
-                  className={`px-4 py-3 rounded-full text-xs font-black sm:whitespace-nowrap transition-all uppercase tracking-tighter text-center flex items-center justify-center ${
-                    isLastOdd && isLastItem ? 'col-span-2' : ''
-                  } ${
+                  className={`px-4 py-3 rounded-full text-xs font-black sm:whitespace-nowrap transition-all uppercase tracking-tighter text-center flex items-center justify-center ${gridColClass} ${
                     activeDayIdx === idx
                       ? 'bg-white text-slate-900 shadow-xl scale-105'
                       : 'bg-white/20 text-white hover:bg-white/30'
