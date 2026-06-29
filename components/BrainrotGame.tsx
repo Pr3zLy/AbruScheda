@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Skull, Volume2, VolumeX, RotateCw } from 'lucide-react';
 
 const BASE_IMAGE_ASSETS = [
-  '/assets/images/blue.png',
-  '/assets/images/feet.png',
-  '/assets/images/feet2.png',
-  '/assets/images/waifu.png'
+  './assets/images/blue.png',
+  './assets/images/feet.png',
+  './assets/images/feet2.png',
+  './assets/images/waifu.png'
 ];
 
 interface BrainrotGameProps {
@@ -13,11 +13,11 @@ interface BrainrotGameProps {
 }
 
 const AUDIO_FILES = [
-  '/assets/brainrot/vine-boom.mp3',
-  '/assets/brainrot/bruh.mp3',
-  '/assets/brainrot/fahhh.mp3',
-  '/assets/brainrot/what-the-sigma.mp3',
-  '/assets/brainrot/metal-pipe.mp3'
+  './assets/brainrot/vine-boom.mp3',
+  './assets/brainrot/bruh.mp3',
+  './assets/brainrot/fahhh.mp3',
+  './assets/brainrot/what-the-sigma.mp3',
+  './assets/brainrot/metal-pipe.mp3'
 ];
 
 export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
@@ -396,10 +396,9 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
               {Array.from({ length: 9 }).map((_, i) => (
                 <button
                   key={i}
-                  onMouseDown={() => handleHit(i)} // Use onMouseDown for faster response than onClick
-                  onTouchStart={(e) => { e.preventDefault(); handleHit(i); }} // For mobile touch speed
+                  onPointerDown={() => handleHit(i)} // Use pointerdown for unified fast mouse/touch response
                   onDragStart={(e) => e.preventDefault()}
-                  className={`relative w-full h-full aspect-square rounded-2xl border-4 transition-all duration-75 flex items-center justify-center ${
+                  className={`relative w-full h-full aspect-square rounded-2xl border-4 transition-all duration-75 flex items-center justify-center touch-none ${
                     activeMole === i 
                       ? 'bg-purple-600 border-purple-400 scale-95 shadow-[0_0_20px_rgba(168,85,247,0.6)] overflow-visible z-20' 
                       : wrongMoles[i] > 0
