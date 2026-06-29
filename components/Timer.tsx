@@ -132,7 +132,6 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
       localStorage.removeItem('timer-expired');
       setSeconds(baseTimeRef.current);
       setIsActive(true);
-      playBeep();
       sendNotification();
     }
   }, []);
@@ -166,7 +165,7 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
   };
 
   // Silent MP3 to keep audio session alive and allow lockscreen updates
-  const SILENT_AUDIO = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA';
+  const SILENT_AUDIO = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA';
 
   useEffect(() => {
     isActiveRef.current = isActive;
@@ -250,7 +249,11 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
       navigator.mediaSession.setActionHandler('play', () => {
         initAudio();
         if (audioRef.current) {
-          audioRef.current.play().catch((e) => console.warn('Audio play from MediaSession failed', e));
+          audioRef.current.play().catch((e) => {
+            if (e.name !== 'NotSupportedError' && e.name !== 'NotAllowedError') {
+              console.warn('Audio play from MediaSession failed', e);
+            }
+          });
         }
         if (secondsRef.current === 0) {
           setSeconds(baseTimeRef.current);
@@ -284,7 +287,11 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
       requestWakeLock(); // Keep screen/process alive on Xiaomi
       if (audioRef.current) {
         audioRef.current.volume = 0.01; // Very quiet but not silent (prevents optimization)
-        audioRef.current.play().catch((e) => console.warn('Audio play failed', e));
+        audioRef.current.play().catch((e) => {
+          if (e.name !== 'NotSupportedError' && e.name !== 'NotAllowedError') {
+            console.warn('Audio play failed', e);
+          }
+        });
       }
       updateMediaSession(seconds, true);
     } else {
@@ -397,12 +404,12 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
               defaultValue={seconds}
               onBlur={handleInputBlur}
               onKeyDown={handleKeyDown}
-              className="w-32 bg-transparent text-4xl font-mono font-black text-slate-800 dark:text-slate-100 leading-none tracking-tighter border-b-2 border-slate-300 focus:outline-none focus:border-slate-500"
+              className="w-36 bg-transparent text-[40px] font-mono font-black text-slate-800 dark:text-slate-100 leading-none tracking-tighter border-b-2 border-slate-300 focus:outline-none focus:border-slate-500"
             />
           ) : (
             <p
               onClick={handleTimerClick}
-              className="text-4xl font-mono font-black text-slate-800 dark:text-slate-100 leading-none tracking-tighter cursor-pointer select-none touch-manipulation"
+              className="text-[40px] font-mono font-black text-slate-800 dark:text-slate-100 leading-none tracking-tighter cursor-pointer select-none touch-manipulation"
             >
               {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}
             </p>
@@ -411,16 +418,16 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
         <div className="flex gap-2">
           <button
             onClick={(e) => reset(e)}
-            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
-            <RotateCcw className="w-5 h-5" />
+            <RotateCcw className="w-[22px] h-[22px]" />
           </button>
           <button
             onClick={(e) => toggle(e)}
             style={{ backgroundColor: themeColor }}
-            className="p-4 rounded-xl text-white shadow-lg transition-all active:scale-95 hover:brightness-110"
+            className="p-[18px] rounded-xl text-white shadow-lg transition-all active:scale-95 hover:brightness-110"
           >
-            {isActive ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7" />}
+            {isActive ? <Pause className="w-[31px] h-[31px]" /> : <Play className="w-[31px] h-[31px]" />}
           </button>
         </div>
       </div>
@@ -435,7 +442,7 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
               backgroundColor: baseTime === t ? `${themeColor}1a` : 'transparent',
               color: baseTime === t ? themeColor : undefined
             }}
-            className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition-all border ${baseTime === t
+            className={`flex-1 py-[7px] rounded-lg text-[11px] font-black transition-all border ${baseTime === t
               ? ''
               : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50'
               }`}

@@ -20,6 +20,71 @@ import SIMPLIFIED_WORKOUT_DATA from './workout_data.json';
 import { WorkoutDay } from './types';
 import { NOTIFICATION_SOUNDS, playNotificationSound } from './notificationSounds';
 
+// Theme presets in the same order as default workout data (Orange, Blue, Purple, Emerald, Rose)
+// followed by additional colors for extra sessions to prevent them from becoming gray.
+const THEME_PRESETS = [
+  {
+    theme: "from-orange-500 to-red-600",
+    accent: "text-orange-600",
+    bgLight: "bg-orange-50",
+    bgDark: "dark:bg-orange-950/20"
+  },
+  {
+    theme: "from-blue-500 to-indigo-600",
+    accent: "text-blue-600",
+    bgLight: "bg-blue-50",
+    bgDark: "dark:bg-blue-950/20"
+  },
+  {
+    theme: "from-purple-500 to-pink-600",
+    accent: "text-purple-600",
+    bgLight: "bg-purple-50",
+    bgDark: "dark:bg-purple-950/20"
+  },
+  {
+    theme: "from-emerald-500 to-teal-600",
+    accent: "text-emerald-600",
+    bgLight: "bg-emerald-50",
+    bgDark: "dark:bg-emerald-950/20"
+  },
+  {
+    theme: "from-rose-500 to-red-600",
+    accent: "text-rose-600",
+    bgLight: "bg-rose-50",
+    bgDark: "dark:bg-rose-950/20"
+  },
+  {
+    theme: "from-amber-500 to-amber-600",
+    accent: "text-amber-600",
+    bgLight: "bg-amber-50",
+    bgDark: "dark:bg-amber-950/20"
+  },
+  {
+    theme: "from-cyan-500 to-blue-600",
+    accent: "text-cyan-600",
+    bgLight: "bg-cyan-50",
+    bgDark: "dark:bg-cyan-950/20"
+  },
+  {
+    theme: "from-violet-500 to-fuchsia-600",
+    accent: "text-violet-600",
+    bgLight: "bg-violet-50",
+    bgDark: "dark:bg-violet-950/20"
+  },
+  {
+    theme: "from-lime-500 to-green-600",
+    accent: "text-lime-600",
+    bgLight: "bg-lime-50",
+    bgDark: "dark:bg-lime-950/20"
+  },
+  {
+    theme: "from-fuchsia-500 to-pink-600",
+    accent: "text-fuchsia-600",
+    bgLight: "bg-fuchsia-50",
+    bgDark: "dark:bg-fuchsia-950/20"
+  }
+];
+
 // Convert the simplified JSON workout structure to the complete internal structure
 const convertSimplifiedStructure = (data: any[]): WorkoutDay[] => {
   return data.map((day, index) => {
@@ -54,51 +119,17 @@ const convertSimplifiedStructure = (data: any[]): WorkoutDay[] => {
       exercises: exercises
     }));
 
-    // Determine theme colors based on the workout day title
-    const titleLower = day.title.toLowerCase();
-    let theme, accent, bgLight, bgDark;
-
-    if (titleLower.includes('push')) {
-      theme = "from-orange-500 to-red-600";
-      accent = "text-orange-600";
-      bgLight = "bg-orange-50";
-      bgDark = "dark:bg-orange-950/20";
-    } else if (titleLower.includes('pull')) {
-      theme = "from-blue-500 to-indigo-600";
-      accent = "text-blue-600";
-      bgLight = "bg-blue-50";
-      bgDark = "dark:bg-blue-950/20";
-    } else if (titleLower.includes('upper') || titleLower.includes('mix')) {
-      theme = "from-purple-500 to-pink-600";
-      accent = "text-purple-600";
-      bgLight = "bg-purple-50";
-      bgDark = "dark:bg-purple-950/20";
-    } else if (titleLower.includes('leg')) {
-      theme = "from-emerald-500 to-teal-600";
-      accent = "text-emerald-600";
-      bgLight = "bg-emerald-50";
-      bgDark = "dark:bg-emerald-950/20";
-    } else if (titleLower.includes('arm')) {
-      theme = "from-rose-500 to-red-600";
-      accent = "text-rose-600";
-      bgLight = "bg-rose-50";
-      bgDark = "dark:bg-rose-950/20";
-    } else {
-      // Default fallback colors
-      theme = "from-slate-500 to-slate-600";
-      accent = "text-slate-600";
-      bgLight = "bg-slate-50";
-      bgDark = "dark:bg-slate-950/20";
-    }
+    // Assign theme based on order of workout day
+    const themePreset = THEME_PRESETS[index % THEME_PRESETS.length];
 
     return {
       id: index + 1,
       title: day.title,
       subtitle: day.subtitle,
-      theme: theme,
-      accent: accent,
-      bgLight: bgLight,
-      bgDark: bgDark,
+      theme: themePreset.theme,
+      accent: themePreset.accent,
+      bgLight: themePreset.bgLight,
+      bgDark: themePreset.bgDark,
       zones: zones
     };
   });
@@ -149,7 +180,7 @@ const CircularProgress = ({ progress, accentClass }: { progress: number, accentC
 const App: React.FC = () => {
   const EXAMPLE_JSON_STRUCTURE = `[
   {
-    "title": "GIORNO 1",
+    "title": "PUSH",
     "subtitle": "Descrizione allenamento...",
     "esercizi": [
       {
@@ -161,7 +192,7 @@ const App: React.FC = () => {
     ]
   },
   {
-    "title": "GIORNO 2",
+    "title": "PULL",
     "subtitle": "Descrizione allenamento...",
     "esercizi": [
       {
@@ -220,7 +251,17 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const [workoutData, setWorkoutData] = useState<WorkoutDay[]>(WORKOUT_DATA);
+  const [workoutData, setWorkoutData] = useState<WorkoutDay[]>(() => {
+    const savedData = localStorage.getItem('custom_workout_data');
+    if (savedData) {
+      try {
+        return JSON.parse(savedData);
+      } catch (e) {
+        console.error("Failed to parse custom_workout_data", e);
+      }
+    }
+    return WORKOUT_DATA;
+  });
   const [showDataModal, setShowDataModal] = useState(false);
   const [showBrainrot, setShowBrainrot] = useState(false);
   const [selectedSound, setSelectedSound] = useState(() => {
@@ -235,15 +276,25 @@ const App: React.FC = () => {
     localStorage.setItem('abruscheda-notification-sound', selectedSound);
   }, [selectedSound]);
 
-  // Lock body scroll when modal is open
+  // Lock body and html scroll when modal is open
   useEffect(() => {
+    const html = document.documentElement;
     if (showDataModal) {
       document.body.style.overflow = 'hidden';
+      document.body.style.height = '100%';
+      html.style.overflow = 'hidden';
+      html.style.height = '100%';
     } else {
       document.body.style.overflow = 'unset';
+      document.body.style.height = 'unset';
+      html.style.overflow = 'unset';
+      html.style.height = 'unset';
     }
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.style.height = 'unset';
+      html.style.overflow = 'unset';
+      html.style.height = 'unset';
     };
   }, [showDataModal]);
 
@@ -280,6 +331,66 @@ const App: React.FC = () => {
     return true;
   };
 
+  const importData = (data: any) => {
+    if (!Array.isArray(data)) throw new Error("Il file deve contenere un array di schede.");
+    if (data.length === 0) throw new Error("Il file è vuoto.");
+
+    // Detect if input is in the simplified structure format
+    const isSimplified = 'esercizi' in data[0] && !('zones' in data[0]);
+
+    let finalData: WorkoutDay[];
+
+    if (isSimplified) {
+      try {
+        finalData = convertSimplifiedStructure(data);
+      } catch (e) {
+        throw new Error("Errore durante la conversione del formato semplificato. Verifica la struttura.");
+      }
+    } else {
+      // Validate complete format structure
+      if (validateWorkoutData(data)) {
+        finalData = data;
+      } else {
+        // Fallback case (validation handles throwing errors)
+        throw new Error("Formato dati non valido.");
+      }
+    }
+
+    setWorkoutData(finalData);
+    setShowDataModal(false);
+    setActiveDayIdx(0);
+  };
+
+  const handleImportClick = async (e: React.MouseEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && text.trim()) {
+        let parsedData;
+        try {
+          parsedData = JSON.parse(text.trim());
+        } catch (err) {
+          // Non è un JSON valido negli appunti, apri il file picker classico
+          document.getElementById('import-data-file')?.click();
+          return;
+        }
+
+        try {
+          importData(parsedData);
+          alert("Schede importate con successo dagli appunti!");
+          return;
+        } catch (error: any) {
+          alert(`Rilevato JSON negli appunti ma non è valido per le schede:\n${error.message}\n\nApertura selezione file...`);
+        }
+      }
+    } catch (err) {
+      console.warn("Impossibile leggere la clipboard o permessi negati. Apertura selezione file...", err);
+    }
+
+    document.getElementById('import-data-file')?.click();
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -300,33 +411,7 @@ const App: React.FC = () => {
           throw new Error("Errore di sintassi JSON. Verifica che il file sia formattato correttamente.");
         }
 
-        if (!Array.isArray(data)) throw new Error("Il file deve contenere un array di schede.");
-        if (data.length === 0) throw new Error("Il file è vuoto.");
-
-        // Detect if input is in the simplified structure format
-        const isSimplified = 'esercizi' in data[0] && !('zones' in data[0]);
-
-        let finalData: WorkoutDay[];
-
-        if (isSimplified) {
-          try {
-            finalData = convertSimplifiedStructure(data);
-          } catch (e) {
-            throw new Error("Errore durante la conversione del formato semplificato. Verifica la struttura.");
-          }
-        } else {
-          // Validate complete format structure
-          if (validateWorkoutData(data)) {
-            finalData = data;
-          } else {
-            // Fallback case (validation handles throwing errors)
-            throw new Error("Formato dati non valido.");
-          }
-        }
-
-        setWorkoutData(finalData);
-        setShowDataModal(false);
-        setActiveDayIdx(0);
+        importData(data);
         alert("Schede importate con successo!");
 
       } catch (error: any) {
@@ -491,7 +576,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] font-sans text-slate-900 dark:text-slate-100 pb-40 transition-colors duration-300 antialiased">
 
       {/* Header */}
-      <header className={`relative pt-12 pb-24 px-6 bg-gradient-to-br ${activeDay.theme} text-white transition-all duration-500 overflow-hidden`}>
+      <header className={`relative pt-12 pb-14 px-6 bg-gradient-to-br ${activeDay.theme} text-white transition-all duration-500 overflow-hidden`}>
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-3xl -mr-20 -mt-20 rounded-full" />
         <div className="max-w-md mx-auto relative z-10">
           <div className="flex justify-between items-start mb-6">
@@ -566,10 +651,10 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto -mt-16 px-4 relative z-20 space-y-6">
+      <main className="max-w-md mx-auto -mt-10 px-4 relative z-20 space-y-6">
 
         {/* CONSOLIDATED STICKY DASHBOARD (Circular Progress + Enlarged Timer) */}
-        <div className="sticky top-4 z-40 bg-white/95 dark:bg-slate-900 backdrop-blur-2xl p-5 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 transition-colors duration-300">
+        <div className="sticky top-4 z-40 bg-white/75 dark:bg-slate-900/70 backdrop-blur-xl p-5 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/40 dark:border-slate-800/80 transition-all duration-300">
           <div className="flex items-center justify-center gap-4 sm:gap-6">
             {/* Left side: Circular Progress */}
             <div className="flex flex-col items-center justify-center shrink-0">
@@ -695,8 +780,14 @@ const App: React.FC = () => {
 
       {/* Data Management Modal */}
       {showDataModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-          <div className="bg-white dark:bg-slate-900 w-[95%] sm:w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col my-auto">
+        <div 
+          onClick={() => setShowDataModal(false)}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-slate-900 w-[95%] sm:w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col my-auto"
+          >
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
@@ -709,22 +800,34 @@ const App: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowDataModal(false)}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                className="group p-2 bg-slate-100/80 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 border border-slate-200/60 dark:border-slate-700/60 rounded-full transition-all duration-300 flex items-center justify-center shadow-sm"
+                aria-label="Chiudi"
               >
-                <X className="w-5 h-5 text-slate-500" />
+                <X className="w-4 h-4 text-slate-500 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200 transition-transform duration-300 group-hover:rotate-90" />
               </button>
             </div>
 
             <div className="p-6 overflow-y-auto flex-1 space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label htmlFor="import-data-file" className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all group">
+                <label
+                  htmlFor="import-data-file"
+                  onClick={handleImportClick}
+                  className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all group"
+                >
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-3 group-hover:scale-110 transition-transform">
                     <Upload className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Importa Dati</span>
                   <span className="text-xs text-slate-400 mt-1">Sovrascrive i dati esistenti</span>
-                  <input id="import-data-file" name="import-data-file" type="file" accept=".json,application/json,text/plain,*/*" onChange={handleFileUpload} className="hidden" />
                 </label>
+                <input
+                  id="import-data-file"
+                  name="import-data-file"
+                  type="file"
+                  accept=".json,application/json,text/plain,*/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
 
                 <button
                   onClick={handleDownload}
