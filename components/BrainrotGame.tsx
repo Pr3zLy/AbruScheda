@@ -374,7 +374,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
           </div>
 
           {gameOver ? (
-            <div className="text-center animate-in zoom-in duration-500 select-none">
+            <div className={`text-center animate-in zoom-in duration-500 select-none ${!showResetButton ? 'pointer-events-none' : ''}`}>
               <h2 className="text-3xl font-black text-red-500 mb-2 uppercase">
                 Hai Perso!
               </h2>
@@ -495,7 +495,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
           </div>
 
           {is18Plus && (
-            <div className="w-full max-w-[200px] mt-2 flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className={`w-full max-w-[200px] mt-2 flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300 ${gameOver ? 'pointer-events-none opacity-50' : ''}`}>
               <div className="relative flex items-center">
                 <input
                   id="brainrot-custom-image-input"
