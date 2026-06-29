@@ -200,7 +200,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
     setScore(s => s + 1);
     setStreak(prev => {
       const newStreak = prev + 1;
-      if (newStreak >= 3) {
+      if (newStreak >= 4) {
         playRandomSound();
       }
       return newStreak;
