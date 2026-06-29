@@ -471,8 +471,6 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
                     setIsMuted(true);
                   }
                 }}
-                onTouchStart={(e) => e.stopPropagation()}
-                onTouchMove={(e) => e.stopPropagation()}
                 className="flex-1 accent-purple-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer touch-none"
               />
               <span className="text-[10px] font-mono text-slate-400 w-8 text-right">
@@ -526,8 +524,6 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
                   step="0.05"
                   value={imageZoom}
                   onChange={(e) => setImageZoom(parseFloat(e.target.value))}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  onTouchMove={(e) => e.stopPropagation()}
                   className="flex-1 accent-purple-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer touch-none"
                 />
                 <span className="text-[9px] font-mono text-slate-400 w-8 text-right">
