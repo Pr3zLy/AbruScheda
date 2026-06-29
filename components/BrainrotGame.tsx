@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Skull, Volume2, VolumeX, RotateCw } from 'lucide-react';
 
 const BASE_IMAGE_ASSETS = [
-  './assets/images/blue.png',
-  './assets/images/feet.png',
-  './assets/images/feet2.png',
-  './assets/images/waifu.png'
+  '/assets/images/blue.png',
+  '/assets/images/feet.png',
+  '/assets/images/feet2.png',
+  '/assets/images/waifu.png'
 ];
 
 interface BrainrotGameProps {
@@ -13,11 +13,11 @@ interface BrainrotGameProps {
 }
 
 const AUDIO_FILES = [
-  './assets/brainrot/vine-boom.mp3',
-  './assets/brainrot/bruh.mp3',
-  './assets/brainrot/fahhh.mp3',
-  './assets/brainrot/what-the-sigma.mp3',
-  './assets/brainrot/metal-pipe.mp3'
+  '/assets/brainrot/vine-boom.mp3',
+  '/assets/brainrot/bruh.mp3',
+  '/assets/brainrot/fahhh.mp3',
+  '/assets/brainrot/what-the-sigma.mp3',
+  '/assets/brainrot/metal-pipe.mp3'
 ];
 
 export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
