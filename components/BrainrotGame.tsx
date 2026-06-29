@@ -279,12 +279,12 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
                   }
                 }
               }}
-              className="p-2 hover:bg-slate-800 rounded-full transition-colors"
+              className="p-[14px] hover:bg-slate-800 rounded-full transition-colors"
               title={is18Plus ? "Disattiva modalità 18+" : "Attiva modalità 18+ (Richiede doppio click)"}
             >
               <svg 
                 viewBox="0 0 24 24" 
-                className={`w-6 h-6 transition-all ${
+                className={`w-[38px] h-[38px] transition-all ${
                   is18Plus 
                     ? 'text-red-500 scale-105 filter drop-shadow-[0_0_6px_rgba(239,68,68,0.6)]' 
                     : is18PlusPending
@@ -333,7 +333,11 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
         </div>
 
         {/* Game Area */}
-        <div className="px-0 py-6 flex flex-col items-center justify-center space-y-6">
+        <div className={`px-0 flex flex-col items-center justify-center transition-all duration-300 ${
+          is18Plus 
+            ? 'py-3 space-y-2' 
+            : 'py-6 space-y-6'
+        }`}>
           <div className="flex justify-around w-full items-center px-4">
             <div className="text-center">
               <div className="text-3xl font-black text-white drop-shadow-lg">{score}</div>
