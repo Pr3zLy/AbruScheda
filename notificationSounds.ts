@@ -134,18 +134,38 @@ export const getSoundById = (id: string): NotificationSound | undefined => {
   return NOTIFICATION_SOUNDS.find(s => s.id === id);
 };
 
+let sharedCtx: AudioContext | null = null;
+
+const getCtx = (): AudioContext | null => {
+  try {
+    if (!sharedCtx) {
+      sharedCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return sharedCtx;
+  } catch {
+    return null;
+  }
+};
+
+export const resumeAudio = async (): Promise<void> => {
+  const ctx = getCtx();
+  if (ctx && ctx.state === 'suspended') {
+    await ctx.resume();
+  }
+};
+
 export const playNotificationSound = (soundId: string) => {
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const ctx = getCtx();
+    if (!ctx) return;
     if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
-    const sound = getSoundById(soundId);
-    if (sound) {
-      sound.play(ctx);
+      ctx.resume().then(() => {
+        const sound = getSoundById(soundId) || NOTIFICATION_SOUNDS[0];
+        sound.play(ctx);
+      });
     } else {
-      // Fallback to classic beep
-      NOTIFICATION_SOUNDS[0].play(ctx);
+      const sound = getSoundById(soundId) || NOTIFICATION_SOUNDS[0];
+      sound.play(ctx);
     }
   } catch (e) {
     console.warn('Notification sound failed', e);

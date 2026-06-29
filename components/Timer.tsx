@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { RotateCcw, Pause, Play } from 'lucide-react';
-import { playNotificationSound } from '../notificationSounds';
+import { playNotificationSound, resumeAudio } from '../notificationSounds';
 
 interface TimerProps {
   accent: string; // e.g., 'text-orange-600'
@@ -107,12 +107,7 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
   const themeColor = getColorHex(accent);
 
   const initAudio = () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume();
-    }
+    resumeAudio();
   };
 
   const playBeep = () => {
