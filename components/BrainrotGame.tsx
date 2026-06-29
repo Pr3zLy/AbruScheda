@@ -17,7 +17,8 @@ const AUDIO_FILES = [
   '/assets/brainrot/bruh.mp3',
   '/assets/brainrot/fahhh.mp3',
   '/assets/brainrot/what-the-sigma.mp3',
-  '/assets/brainrot/metal-pipe.mp3'
+  '/assets/brainrot/metal-pipe.mp3',
+  '/assets/brainrot/what-the-dog-doin.mp3'
 ];
 
 export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
