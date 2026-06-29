@@ -9,15 +9,66 @@ interface TimerProps {
 
 const Timer: React.FC<TimerProps> = ({ accent }) => {
   const savedBase = parseInt(localStorage.getItem('timer-base-time') || '90');
-  const wasExpired = localStorage.getItem('timer-expired') === '1';
-  const [seconds, setSeconds] = useState(savedBase);
+  
+  // Read persisted timer state
+  const getPersistedState = () => {
+    const persistedSecondsStr = localStorage.getItem('timer-seconds');
+    const persistedIsActiveStr = localStorage.getItem('timer-is-active');
+    const persistedUpdatedAtStr = localStorage.getItem('timer-updated-at');
+    let wasExpiredOffline = false;
+
+    if (persistedSecondsStr !== null && persistedIsActiveStr !== null && persistedUpdatedAtStr !== null) {
+      const persistedSeconds = parseInt(persistedSecondsStr);
+      const persistedIsActive = persistedIsActiveStr === 'true';
+      const persistedUpdatedAt = parseInt(persistedUpdatedAtStr);
+
+      if (persistedIsActive) {
+        const elapsed = Math.floor((Date.now() - persistedUpdatedAt) / 1000);
+        const remaining = Math.max(0, persistedSeconds - elapsed);
+        if (remaining === 0 && persistedSeconds > 0) {
+          localStorage.setItem('timer-expired', '1');
+          wasExpiredOffline = true;
+          return {
+            seconds: 0,
+            isActive: false,
+            wasExpiredOffline
+          };
+        }
+        return {
+          seconds: remaining,
+          isActive: remaining > 0,
+          wasExpiredOffline
+        };
+      } else {
+        return {
+          seconds: persistedSeconds,
+          isActive: false,
+          wasExpiredOffline
+        };
+      }
+    }
+    return {
+      seconds: savedBase,
+      isActive: false,
+      wasExpiredOffline
+    };
+  };
+
+  const initialState = getPersistedState();
+  const wasExpired = localStorage.getItem('timer-expired') === '1' || initialState.wasExpiredOffline;
+
+  const [seconds, setSeconds] = useState(initialState.seconds);
   const [baseTime, setBaseTime] = useState(savedBase);
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(initialState.isActive);
   const [isEditing, setIsEditing] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const lastClickRef = useRef<number>(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isActiveRef = useRef(isActive);
+  const secondsRef = useRef(seconds);
+  const baseTimeRef = useRef(baseTime);
 
   // Wake Lock API to prevent Xiaomi/Android from killing background process
   const requestWakeLock = async () => {
@@ -49,6 +100,7 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
     if (accentClass.includes('blue')) return '#2563eb';
     if (accentClass.includes('purple')) return '#9333ea';
     if (accentClass.includes('emerald')) return '#059669';
+    if (accentClass.includes('rose')) return '#e11d48';
     return '#64748b';
   };
 
@@ -83,7 +135,10 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
   useEffect(() => {
     if (wasExpired) {
       localStorage.removeItem('timer-expired');
+      setSeconds(baseTimeRef.current);
       setIsActive(true);
+      playBeep();
+      sendNotification();
     }
   }, []);
 
@@ -118,11 +173,6 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
   // Silent MP3 to keep audio session alive and allow lockscreen updates
   const SILENT_AUDIO = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA';
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const isActiveRef = useRef(isActive);
-  const secondsRef = useRef(seconds);
-  const baseTimeRef = useRef(baseTime);
-
   useEffect(() => {
     isActiveRef.current = isActive;
   }, [isActive]);
@@ -135,6 +185,13 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
     baseTimeRef.current = baseTime;
     localStorage.setItem('timer-base-time', baseTime.toString());
   }, [baseTime]);
+
+  // Persist timer state to localStorage whenever seconds or isActive changes
+  useEffect(() => {
+    localStorage.setItem('timer-seconds', seconds.toString());
+    localStorage.setItem('timer-is-active', isActive.toString());
+    localStorage.setItem('timer-updated-at', Date.now().toString());
+  }, [seconds, isActive]);
 
   const updateMediaSession = (sec: number, active: boolean) => {
     if ('mediaSession' in navigator) {

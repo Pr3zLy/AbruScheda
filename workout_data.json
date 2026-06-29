@@ -4,26 +4,32 @@
     "subtitle": "Focus: Spinta & Ipertrofia",
     "esercizi": [
       {
+        "nome": "Weighted Push-ups",
+        "serie": "4 x 10-8",
+        "tipo": "chest",
+        "note": "Keep core tight and elbows at 45 degrees"
+      },
+      {
         "nome": "Panca Piana Bilanciere",
-        "serie": "3 x 6-8",
+        "serie": "4 x 8-6",
         "tipo": "chest",
         "note": "Gomiti a 45°, scapole addotte, controlla la discesa (3 sec) per massimo stimolo"
       },
       {
         "nome": "Croci con Manubri (Piana)",
-        "serie": "3 x 12",
+        "serie": "4 x 10",
         "tipo": "chest",
         "note": "ROM ampio, stretch massimo in basso, contrazione pettorale in alto senza bloccare gomiti"
       },
       {
         "nome": "Chest Press Inclinata",
-        "serie": "4 x 8-10",
+        "serie": "4 x 10-8",
         "tipo": "chest",
         "note": "Panca 30° enfasi petto alto, gomiti sotto le mani, discesa controllata"
       },
       {
         "nome": "Pec Deck (Butterfly)",
-        "serie": "3 x 12",
+        "serie": "4 x 10",
         "tipo": "chest",
         "note": "ROM completo, contrazione picco 1 sec, evita slancio, scapole ferme"
       },
@@ -46,14 +52,20 @@
     "subtitle": "Focus: Tirata & Schiena Spessa",
     "esercizi": [
       {
+        "nome": "Weighted Push-ups",
+        "serie": "4 x 10-8",
+        "tipo": "chest",
+        "note": "Keep core tight and elbows at 45 degrees"
+      },
+      {
         "nome": "Lat Machine Presa Larga",
-        "serie": "4 x 8-10",
+        "serie": "4 x 10",
         "tipo": "back",
         "note": "Scapole giù e indietro, petto fuori, ROM completo senza slancio"
       },
       {
         "nome": "Pullover al Cavo Alto",
-        "serie": "3 x 15",
+        "serie": "4 x 10",
         "tipo": "back",
         "note": "ROM ampio dalla testa ai glutei, enfasi gran dorsale, stretch massimo"
       },
@@ -64,16 +76,22 @@
         "note": "Inclinazione in avanti 30°, tirata al bacino, scapole indietro"
       },
       {
-        "nome": "Rematore Unilaterale Machine",
-        "serie": "3 x 10 per lato",
+        "nome": "Rematore Machine",
+        "serie": "4 x 10",
         "tipo": "back",
         "note": "Gomito vicino al corpo, tirata all'altezza bacino, contrazione 1 sec"
       },
       {
         "nome": "Iperextensions",
-        "serie": "4 x 12-15",
+        "serie": "4 x 10",
         "tipo": "back",
         "note": "ROM completo, enfasi contrazione glutei/lombari, controlla la discesa"
+      },
+      {
+        "nome": "Avambracci",
+        "serie": "4 x 10",
+        "tipo": "forearms",
+        "note": "Fles.-est. polsi su panca, picco contrazione e bruciore controllato"
       }
     ]
   },
@@ -82,8 +100,14 @@
     "subtitle": "Focus: Mix Carenze & Arm Killer",
     "esercizi": [
       {
+        "nome": "Weighted Push-ups",
+        "serie": "4 x 10-8",
+        "tipo": "chest",
+        "note": "Keep core tight and elbows at 45 degrees"
+      },
+      {
         "nome": "Chest Press Orizzontale",
-        "serie": "3 x 10",
+        "serie": "4 x 10",
         "tipo": "chest",
         "note": "Adduci le scapole, mantieni il petto alto, spinta esplosiva e controlla il ritorno"
       },
@@ -95,27 +119,33 @@
       },
       {
         "nome": "Panca Inclinata Manubri",
-        "serie": "3 x 10-12",
+        "serie": "4 x 10",
         "tipo": "chest",
         "note": "Panca a 30°, discesa controllata coi gomiti a 45°, spingi convergendoli in alto"
       },
       {
         "nome": "Vertical Row",
-        "serie": "3 x 10",
+        "serie": "4 x 10",
         "tipo": "back",
         "note": "Petto saldo sul cuscino, scapole addotte, tira coi gomiti per massimo stimolo"
       },
       {
-        "nome": "Face Pull ai Cavi",
-        "serie": "3 x 15",
+        "nome": "Face Pull",
+        "serie": "4 x 15-10",
         "tipo": "shoulders",
         "note": "Tira la corda verso le orecchie separando le mani, focus deltoide posteriore"
       },
       {
         "nome": "Curl Bicipiti",
-        "serie": "3 x 12",
+        "serie": "4 x 10",
         "tipo": "biceps",
         "note": "Cavo basso - Gomiti incollati ai fianchi, contrai forte al picco"
+      },
+      {
+        "nome": "Pushdown Tricipiti",
+        "serie": "4 x 10",
+        "tipo": "triceps",
+        "note": "Cavo alto - Gomiti fermi, spingi verso il basso e apri la corda alla fine"
       },
       {
         "nome": "Avambracci",
@@ -131,31 +161,31 @@
     "esercizi": [
       {
         "nome": "Squat al Macchinario",
-        "serie": "4 x 8-10",
+        "serie": "4 x 10",
         "tipo": "legs",
         "note": "Piedi posizionati per massima accosciata, scendi profondo, spingi con tutto il piede"
       },
       {
         "nome": "Leg Press 45°",
-        "serie": "3 x 12",
+        "serie": "4 x 10",
         "tipo": "legs",
         "note": "Scendi controllando senza sollevare il bacino, spingi forte dal tallone"
       },
       {
         "nome": "Leg Extension",
-        "serie": "4 x 15",
+        "serie": "4 x 10",
         "tipo": "legs",
         "note": "Schiena aderente allo schienale, tieni la contrazione di 1 sec nel punto massimo"
       },
       {
         "nome": "Leg Curl (Seduto/Sdraiato)",
-        "serie": "4 x 12",
+        "serie": "4 x 10",
         "tipo": "legs",
         "note": "Movimento controllato, tieni il bacino fermo e strizza i femorali alla fine"
       },
       {
         "nome": "Polpacci al Macchinario",
-        "serie": "4 x 20",
+        "serie": "4 x 20-10",
         "tipo": "calves",
         "note": "Pausa di 1 sec nel massimo allungamento in basso e in massima contrazione in alto"
       }
@@ -165,6 +195,12 @@
     "title": "ARM",
     "subtitle": "Focus: Braccia & Ipertrofia",
     "esercizi": [
+      {
+        "nome": "Weighted Push-ups",
+        "serie": "3 x 8-10",
+        "tipo": "chest",
+        "note": "Keep core tight and elbows at 45 degrees"
+      },
       {
         "nome": "French Press + Extension",
         "serie": "3 x 10+10",
@@ -182,12 +218,6 @@
         "serie": "3 x 10",
         "tipo": "biceps",
         "note": "Presa neutra, gomito fisso, esecuzione lenta e controllata"
-      },
-      {
-        "nome": "Curl Bicipiti",
-        "serie": "3 x 12",
-        "tipo": "biceps",
-        "note": "Cavo basso - Gomiti bloccati ai fianchi, strizza forte e controlla l'eccentrica"
       },
       {
         "nome": "Pushdown Tricipiti",

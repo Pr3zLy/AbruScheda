@@ -14,6 +14,7 @@ export const WORKOUT_DATA: WorkoutDay[] = [
       {
         name: "Zona Panche",
         exercises: [
+          { name: "Weighted Push-ups", sets: "3 x 8-10", type: "chest", notes: "Keep core tight and elbows at 45 degrees" },
           { name: "Panca Piana Bilanciere", sets: "3 x 6-8", type: "chest", notes: "Esercizio base, massima forza" },
           { name: "Croci con Manubri (Piana)", sets: "3 x 12", type: "chest", notes: "Usa la stessa panca di prima" }
         ]
@@ -40,6 +41,7 @@ export const WORKOUT_DATA: WorkoutDay[] = [
       {
         name: "Zona Alto Cavo",
         exercises: [
+          { name: "Weighted Push-ups", sets: "3 x 8-10", type: "chest", notes: "Keep core tight and elbows at 45 degrees" },
           { name: "Lat Machine Presa Larga", sets: "4 x 8-10", type: "back", notes: "Focus gran dorsale" },
           { name: "Pullover al Cavo Alto", sets: "3 x 15", type: "back", notes: "Stessa stazione, cambia impugnatura (corda)" }
         ]
@@ -56,6 +58,12 @@ export const WORKOUT_DATA: WorkoutDay[] = [
         exercises: [
           { name: "Iperextensions", sets: "4 x 12-15", type: "back", notes: "Fondamentale per la tua carenza" }
         ]
+      },
+      {
+        name: "Zona Avambracci",
+        exercises: [
+          { name: "Avambracci", sets: "4 x 10", type: "forearms", notes: "Fles.-est. polsi su panca, picco contrazione e bruciore controllato" }
+        ]
       }
     ]
   },
@@ -71,6 +79,7 @@ export const WORKOUT_DATA: WorkoutDay[] = [
       {
         name: "Zona Macchine",
         exercises: [
+          { name: "Weighted Push-ups", sets: "3 x 8-10", type: "chest", notes: "Keep core tight and elbows at 45 degrees" },
           { name: "Chest Press Orizzontale", sets: "3 x 10", type: "chest", notes: "Adduci le scapole, mantieni il petto alto, spinta esplosiva e controlla il ritorno" },
           { name: "Lat Machine Inversa", sets: "4 x 10", type: "back", notes: "Presa supina stretta, porta la sbarra al petto basso contraendo il dorso" }
         ]
@@ -85,13 +94,19 @@ export const WORKOUT_DATA: WorkoutDay[] = [
       {
         name: "Stazione Cavi (Multi-task)",
         exercises: [
-          { name: "Face Pull ai Cavi", sets: "3 x 15", type: "shoulders", notes: "Tira la corda verso le orecchie separando le mani, focus deltoide posteriore" }
+          { name: "Face Pull", sets: "3 x 15", type: "shoulders", notes: "Tira la corda verso le orecchie separando le mani, focus deltoide posteriore" }
         ]
       },
       {
         name: "Zona Bicipiti",
         exercises: [
           { name: "Curl Bicipiti", sets: "3 x 12", type: "biceps", notes: "Cavo basso - Gomiti incollati ai fianchi, contrai forte al picco" }
+        ]
+      },
+      {
+        name: "Zona Tricipiti",
+        exercises: [
+          { name: "Pushdown Tricipiti", sets: "4 x 10", type: "triceps", notes: "Cavo alto - Gomiti fermi, spingi verso il basso e apri la corda alla fine" }
         ]
       },
       {
@@ -145,6 +160,7 @@ export const WORKOUT_DATA: WorkoutDay[] = [
       {
         name: "Zona Tricipiti",
         exercises: [
+          { name: "Weighted Push-ups", sets: "3 x 8-10", type: "chest", notes: "Keep core tight and elbows at 45 degrees" },
           { name: "French Press + Extension", sets: "3 x 10+10", type: "triceps", notes: "French: gomiti in alto, discesa dietro testa. Extension: sopra testa, ROM completo" },
           { name: "Pushdown Tricipiti", sets: "3 x 12", type: "triceps", notes: "Cavo alto - Gomiti fermi, spingi verso il basso e apri la corda alla fine" }
         ]
@@ -153,8 +169,7 @@ export const WORKOUT_DATA: WorkoutDay[] = [
         name: "Zona Bicipiti",
         exercises: [
           { name: "Bicep Curl Machine", sets: "4 x 10-12", type: "biceps", notes: "ROM completo, gomiti fissi, contrazione picco 1 sec, lento in negativo" },
-          { name: "Hammer Curl Manubri", sets: "3 x 10", type: "biceps", notes: "Presa neutra, gomito fisso, esecuzione lenta e controllata" },
-          { name: "Curl Bicipiti", sets: "3 x 12", type: "biceps", notes: "Cavo basso - Gomiti bloccati ai fianchi, strizza forte e controlla l'eccentrica" }
+          { name: "Hammer Curl Manubri", sets: "3 x 10", type: "biceps", notes: "Presa neutra, gomito fisso, esecuzione lenta e controllata" }
         ]
       },
       {

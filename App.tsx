@@ -13,7 +13,8 @@ import {
   RotateCcw,
   X,
   FileJson,
-  Bot
+  Bot,
+  Skull
 } from 'lucide-react';
 import SIMPLIFIED_WORKOUT_DATA from './workout_data.json';
 import { WorkoutDay } from './types';
@@ -106,6 +107,7 @@ const convertSimplifiedStructure = (data: any[]): WorkoutDay[] => {
 const WORKOUT_DATA = convertSimplifiedStructure(SIMPLIFIED_WORKOUT_DATA);
 import TypeIcon from './components/TypeIcon';
 import Timer from './components/Timer';
+import { BrainrotGame } from './components/BrainrotGame';
 
 const CircularProgress = ({ progress, accentClass }: { progress: number, accentClass: string }) => {
   const radius = 26;
@@ -220,6 +222,7 @@ const App: React.FC = () => {
 
   const [workoutData, setWorkoutData] = useState<WorkoutDay[]>(WORKOUT_DATA);
   const [showDataModal, setShowDataModal] = useState(false);
+  const [showBrainrot, setShowBrainrot] = useState(false);
   const [selectedSound, setSelectedSound] = useState(() => {
     return localStorage.getItem('abruscheda-notification-sound') || 'beep-classic';
   });
@@ -828,10 +831,22 @@ const App: React.FC = () => {
                   <RotateCcw className="w-4 h-4" />
                   Ripristina Default
                 </button>
+                <button
+                  onClick={() => { setShowDataModal(false); setShowBrainrot(true); }}
+                  className="w-full py-4 flex items-center justify-center gap-2 text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/10 rounded-xl transition-colors font-black uppercase tracking-widest text-sm mt-2"
+                >
+                  <Skull className="w-4 h-4 animate-pulse" />
+                  /brainrot
+                </button>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Brainrot Game Modal */}
+      {showBrainrot && (
+        <BrainrotGame onClose={() => setShowBrainrot(false)} />
       )}
 
     </div>
