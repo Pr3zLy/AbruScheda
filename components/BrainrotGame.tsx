@@ -230,7 +230,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="bg-slate-900 w-full sm:max-w-md rounded-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-2 border-purple-500/50 flex-shrink-0 my-4"
+        className="bg-slate-900 w-full sm:max-w-md rounded-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-2 border-purple-500/50 flex-shrink-0 my-4 select-none"
         onClick={(e) => e.stopPropagation()}
       >
         
@@ -343,7 +343,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
         </div>
 
         {/* Game Area */}
-        <div className={`px-0 flex flex-col items-center justify-center transition-all duration-300 ${
+        <div className={`px-0 flex flex-col items-center justify-center transition-all duration-300 select-none ${
           is18Plus 
             ? 'py-3 space-y-2' 
             : 'py-6 space-y-6'
@@ -374,7 +374,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
           </div>
 
           {gameOver ? (
-            <div className="text-center animate-in zoom-in duration-500">
+            <div className="text-center animate-in zoom-in duration-500 select-none">
               <h2 className="text-3xl font-black text-red-500 mb-2 uppercase">
                 Hai Perso!
               </h2>
@@ -402,7 +402,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-3 w-full aspect-square max-w-[420px] px-2">
+            <div className="grid grid-cols-3 gap-2 w-full aspect-square max-w-[340px] px-3">
               {Array.from({ length: 9 }).map((_, i) => (
                 <button
                   key={i}
