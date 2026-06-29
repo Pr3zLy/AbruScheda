@@ -1,26 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Skull, Volume2, VolumeX, RotateCw } from 'lucide-react';
 
-const imageModules = import.meta.glob('../assets/images/*.{png,jpg,jpeg,gif,webp,svg}', { query: '?url', import: 'default', eager: true });
-const publicImageModules = import.meta.glob('/public/assets/images/*.{png,jpg,jpeg,gif,webp,svg}', { import: 'default', eager: true });
-
-const allImages = [
-  ...Object.values(imageModules) as string[],
-  ...Object.values(publicImageModules) as string[]
+const BASE_IMAGE_ASSETS = [
+  '/assets/images/blue.png',
+  '/assets/images/feet.png',
+  '/assets/images/feet2.png',
+  '/assets/images/waifu.png'
 ];
-
-// Deduplica le immagini usando il nome del file pulito (senza hash di build Vite)
-const uniqueImagesMap = new Map<string, string>();
-allImages.forEach((img) => {
-  const parts = img.split('/');
-  const name = parts[parts.length - 1].split('?')[0].replace(/-[a-zA-Z0-9_-]{8,}\./, '.');
-  
-  if (!uniqueImagesMap.has(name) || img.startsWith('/assets/')) {
-    uniqueImagesMap.set(name, img);
-  }
-});
-
-const BASE_IMAGE_ASSETS = Array.from(uniqueImagesMap.values());
 
 interface BrainrotGameProps {
   onClose: () => void;
