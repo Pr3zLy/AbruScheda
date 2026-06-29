@@ -44,6 +44,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
   });
   const [customImage, setCustomImage] = useState(() => localStorage.getItem('brainrot-custom-image') || '');
   const [showResetButton, setShowResetButton] = useState(false);
+  const DEFAULT_ZOOM: Record<number, number> = { 0: 1.65, 1: 1.0, 2: 0.9, 3: 1.0 };
   const [imageZoomMap, setImageZoomMap] = useState<Record<number, number>>(() => {
     const raw = localStorage.getItem('brainrot-image-zoom-map');
     if (raw) {
@@ -51,10 +52,13 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
     }
     // Legacy fallback: single zoom value → apply to all base images
     const legacy = localStorage.getItem('brainrot-image-zoom');
-    const val = legacy ? parseFloat(legacy) : 1.0;
-    const map: Record<number, number> = {};
-    BASE_IMAGE_ASSETS.forEach((_, i) => { map[i] = val; });
-    return map;
+    if (legacy) {
+      const val = parseFloat(legacy);
+      const map: Record<number, number> = {};
+      BASE_IMAGE_ASSETS.forEach((_, i) => { map[i] = val; });
+      return map;
+    }
+    return { ...DEFAULT_ZOOM };
   });
 
   const IMAGE_ASSETS = [...BASE_IMAGE_ASSETS];
@@ -95,7 +99,7 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
     localStorage.setItem('brainrot-image-zoom-map', JSON.stringify(imageZoomMap));
   }, [imageZoomMap]);
 
-  const getCurrentZoom = () => imageZoomMap[currentImageIndex] ?? 1.0;
+  const getCurrentZoom = () => imageZoomMap[currentImageIndex] ?? DEFAULT_ZOOM[currentImageIndex] ?? 1.0;
   const setCurrentZoom = (val: number) => {
     setImageZoomMap(prev => ({ ...prev, [currentImageIndex]: val }));
   };
