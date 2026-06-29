@@ -739,7 +739,7 @@ const App: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Genera Prompt per IA</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Crea la tua scheda 100% privata e gratis con AI</label>
                 <div className="grid grid-cols-3 gap-3">
                   <button onClick={() => handleGenerateWithAI('gemini')} className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800 hover:scale-[1.02] transition-transform group">
                     <img
