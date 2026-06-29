@@ -390,6 +390,8 @@ const Timer: React.FC<TimerProps> = ({ accent }) => {
         <div className="flex-1">
           {isEditing ? (
             <input
+              id="timer-seconds-input"
+              name="timer-seconds-input"
               ref={inputRef}
               type="number"
               defaultValue={seconds}

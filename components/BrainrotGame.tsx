@@ -100,7 +100,11 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
     const audio = new Audio(randomAudio);
     audio.volume = volume;
     currentAudioRef.current = audio;
-    audio.play().catch(e => console.error("Audio play failed:", e));
+    audio.play().catch(e => {
+      if (e.name !== 'AbortError') {
+        console.error("Audio play failed:", e);
+      }
+    });
   };
 
   // Ferma l'audio e ripulisce i timer all'uscita/smontaggio del componente
@@ -221,8 +225,14 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-0 sm:p-4 bg-black/25 backdrop-blur-[1px] overflow-y-auto">
-      <div className="bg-slate-900 w-full sm:max-w-md rounded-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-2 border-purple-500/50 flex-shrink-0 my-4">
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-0 sm:p-4 bg-black/25 backdrop-blur-[1px] overflow-y-auto"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="bg-slate-900 w-full sm:max-w-md rounded-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border-2 border-purple-500/50 flex-shrink-0 my-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header */}
         <div className="h-[72px] px-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 flex-shrink-0">
@@ -457,6 +467,8 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
                 <Volume2 className="w-4 h-4 text-purple-400" />
               )}
               <input 
+                id="brainrot-volume-slider"
+                name="brainrot-volume-slider"
                 type="range" 
                 min="0" 
                 max="1" 
@@ -486,6 +498,8 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
             <div className="w-full max-w-[200px] mt-2 flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="relative flex items-center">
                 <input
+                  id="brainrot-custom-image-input"
+                  name="brainrot-custom-image-input"
                   type="text"
                   placeholder="URL immagine esterna..."
                   value={customImage}
@@ -518,6 +532,8 @@ export const BrainrotGame: React.FC<BrainrotGameProps> = ({ onClose }) => {
               <div className="flex items-center justify-between w-full gap-2 mt-0.5">
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider w-8">Zoom</span>
                 <input
+                  id="brainrot-zoom-slider"
+                  name="brainrot-zoom-slider"
                   type="range"
                   min="0.5"
                   max="2.0"

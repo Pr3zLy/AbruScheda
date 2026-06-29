@@ -717,13 +717,13 @@ const App: React.FC = () => {
 
             <div className="p-6 overflow-y-auto flex-1 space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all group">
+                <label htmlFor="import-data-file" className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all group">
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-3 group-hover:scale-110 transition-transform">
                     <Upload className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Importa Dati</span>
                   <span className="text-xs text-slate-400 mt-1">Sovrascrive i dati esistenti</span>
-                  <input type="file" accept=".json,application/json,text/plain,*/*" onChange={handleFileUpload} className="hidden" />
+                  <input id="import-data-file" name="import-data-file" type="file" accept=".json,application/json,text/plain,*/*" onChange={handleFileUpload} className="hidden" />
                 </label>
 
                 <button
